@@ -1,185 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: black;
-            margin: 0;
-            overflow: hidden;
-            position: relative;
-        }
-        #gameCanvas {
-            border: 2px solid #fff;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        .stars {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 0;
-        }
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background-color: white;
-            border-radius: 50%;
-            animation: twinkle 2s infinite alternate;
-        }
-        @keyframes twinkle {
-            from { opacity: 0.2; }
-            to { opacity: 1; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Mario Game with Camera</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: lightblue;
+    }
+    canvas {
+      display: block;
+      background-color: skyblue;
+    }
+  </style>
 </head>
 <body>
-    <div class="stars"></div>
-    <canvas id="gameCanvas" width="600" height="600"></canvas>
-    <img id="meguminSymbol" src="megumin-symbol.png" style="display: none;">
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const gridSize = 20;
-        let snake = [{ x: 200, y: 200 }];
-        let direction = { x: gridSize, y: 0 };
-        let food = {};
-        let score = 0;
-        let gameInterval;
-        let isRunning = false;
-        const meguminSymbol = document.getElementById('meguminSymbol');
-
-        function startGame() {
-            clearInterval(gameInterval);
-            snake = [{ x: 200, y: 200 }];
-            direction = { x: gridSize, y: 0 };
-            score = 0;
-            generateFood();
-            gameInterval = setInterval(gameLoop, 100);
-            isRunning = true;
-        }
-
-        function gameLoop() {
-            updateSnake();
-            checkCollision();
-            draw();
-        }
-
-        function updateSnake() {
-            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
-            snake.unshift(head);
-
-            if (head.x === food.x && head.y === food.y) {
-                score++;
-                generateFood();
-            } else {
-                snake.pop();
-            }
-        }
-
-        function checkCollision() {
-            const head = snake[0];
-            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
-                endGame();
-            }
-
-            for (let i = 1; i < snake.length; i++) {
-                if (snake[i].x === head.x && snake[i].y === head.y) {
-                    endGame();
-                }
-            }
-        }
-
-        function generateFood() {
-            food = {
-                x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
-                y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize
-            };
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw snake
-            snake.forEach((segment, index) => {
-                ctx.fillStyle = index === 0 ? 'darkgreen' : 'lightgreen';
-                ctx.beginPath();
-                ctx.arc(segment.x + gridSize / 2, segment.y + gridSize / 2, gridSize / 2, 0, 2 * Math.PI);
-                ctx.fill();
-            });
-
-            // Draw food
-            ctx.fillStyle = 'red';
-            ctx.beginPath();
-            ctx.arc(food.x + gridSize / 2, food.y + gridSize / 2, gridSize / 2, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Draw score
-            ctx.fillStyle = 'white';
-            ctx.font = '20px Arial';
-            ctx.fillText('Score: ' + score, 10, 20);
-
-            // Draw Megumin symbol
-            drawMeguminSymbol();
-        }
-
-        function drawMeguminSymbol() {
-            const symbolSize = 30;
-            const x = canvas.width - symbolSize - 10;
-            const y = 10;
-            ctx.drawImage(meguminSymbol, x, y, symbolSize, symbolSize);
-        }
-
-        function endGame() {
-            clearInterval(gameInterval);
-            isRunning = false;
-            draw();
-            ctx.fillStyle = 'red';
-            ctx.font = '40px Arial';
-            ctx.fillText('Game Over', canvas.width / 4, canvas.height / 2);
-            ctx.font = '20px Arial';
-            ctx.fillText('Press Enter to Restart', canvas.width / 4, canvas.height / 2 + 40);
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === ' ' && !isRunning) {
-                startGame();
-            } else if (e.key === 'w' && direction.y === 0) {
-                direction = { x: 0, y: -gridSize };
-            } else if (e.key === 's' && direction.y === 0) {
-                direction = { x: 0, y: gridSize };
-            } else if (e.key === 'a' && direction.x === 0) {
-                direction = { x: -gridSize, y: 0 };
-            } else if (e.key === 'd' && direction.x === 0) {
-                direction = { x: gridSize, y: 0 };
-            } else if (e.key === 'Enter' && !isRunning) {
-                startGame();
-            }
-        });
-
-        // Create stars
-        const starContainer = document.querySelector('.stars');
-        for (let i = 0; i < 100; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.top = `${Math.random() * 100}%`;
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.animationDuration = `${Math.random() * 2 + 1}s`;
-            starContainer.appendChild(star);
-        }
-
-        startGame();
-    </script>
+  <canvas id="gameCanvas"></canvas>
+  <script src="game.js"></script>
 </body>
 </html>
