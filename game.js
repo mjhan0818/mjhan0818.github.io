@@ -17,6 +17,10 @@ const mario = {
   jumping: false,
 };
 
+// Mario 캐릭터 이미지 로드
+const marioImage = new Image();
+marioImage.src = 'maru.png';  // 이미지 파일 경로
+
 // 장애물(플랫폼)과 코인을 저장하는 배열
 let platforms = [
   { x: 100, y: 300, width: 200, height: 20 },
@@ -49,10 +53,9 @@ window.addEventListener('keyup', (e) => {
   keys[e.code] = false;
 });
 
-// Mario 그리기
+// Mario 그리기 (이미지로 대체)
 function drawMario() {
-  ctx.fillStyle = 'red';
-  ctx.fillRect(mario.x - cameraX, mario.y, mario.width, mario.height);
+  ctx.drawImage(marioImage, mario.x - cameraX, mario.y, mario.width, mario.height);
 }
 
 // 플랫폼 그리기
