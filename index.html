@@ -20,6 +20,13 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            text-align: center;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 20px 0;
         }
         .chat-box {
             height: 400px;
@@ -100,6 +107,7 @@
 <body>
 
 <div class="chat-container">
+    <div class="title">요리 레시피를 물어보세요!</div>
     <div id="api-key-input" class="api-container">
         <input type="text" id="api-key" placeholder="Enter your OpenAI API key">
         <button onclick="setApiKey()">Set API Key</button>
