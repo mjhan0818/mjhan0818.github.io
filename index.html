@@ -50,7 +50,7 @@
             transform: translate(-50%, -50%) rotate(0deg);
             opacity: 0.5;
             pointer-events: none;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
         }
         /* 투명도 조절 바 */
         .opacity-slider {
@@ -61,7 +61,7 @@
             width: 200px;
             z-index: 30;
         }
-        /* 기본 버튼 스타일 (크기 0.75배 축소) */
+        /* 기본 버튼 스타일 (0.75배 축소) */
         .controls {
             position: fixed;
             bottom: 15px;
@@ -73,15 +73,15 @@
             z-index: 20;
         }
         .btn {
-            width: 45px;  /* 기존의 60px → 45px */
-            height: 45px; /* 기존의 60px → 45px */
+            width: 45px;
+            height: 45px;
             background: white;
             border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.8); /* 기존의 4px → 3px */
+            border: 3px solid rgba(255, 255, 255, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 12px; /* 기존의 14px → 12px */
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             text-align: center;
@@ -90,30 +90,6 @@
         }
         .btn:active {
             background: rgba(255, 255, 255, 0.7);
-        }
-        /* 파일 선택 input 숨기기 */
-        .hidden-input {
-            display: none;
-        }
-        /* 16:9 모드 조정 */
-        .anime-camera {
-            width: 100vw;
-            max-width: 700px;
-            height: calc(100vh - 100px);
-            aspect-ratio: 16 / 9;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 15px;
-        }
-        /* 16:9 모드에서 버튼을 카메라 내부 하단에 배치 */
-        .anime-camera .controls {
-            position: absolute;
-            bottom: 10px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
         }
     </style>
 </head>
@@ -161,25 +137,15 @@
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
-            let currentAspect = "3/4"; // 기본값 4:3
-            let fitMode = "width"; // 기본값: 가로 맞춤
             let isRotated = false; // 현재 회전 상태 저장
+            let fitMode = "width"; // 기본값: 가로 맞춤
 
-            // 1. 카메라 화면 가져오기
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("카메라 접근 실패:", err);
-                });
-
-            // 2. 파일 업로드 버튼 클릭 시 파일 선택창 열기
+            // 파일 업로드 버튼 클릭 시 파일 선택창 열기
             uploadBtn.addEventListener("click", () => {
                 upload.click();
             });
 
-            // 3. 이미지 업로드 및 오버레이 적용
+            // 이미지 업로드 및 오버레이 적용
             upload.addEventListener("change", (event) => {
                 const file = event.target.files[0];
                 if (file) {
@@ -191,12 +157,12 @@
                 }
             });
 
-            // 4. 투명도 조절 기능
+            // 투명도 조절 기능
             opacitySlider.addEventListener("input", () => {
                 overlay.style.opacity = opacitySlider.value;
             });
 
-            // 5. 오버레이 맞춤 방식 토글 (가로 ↔ 세로)
+            // 오버레이 맞춤 방식 토글 (가로 ↔ 세로)
             fitToggle.addEventListener("click", () => {
                 if (fitMode === "width") {
                     overlay.style.width = "auto";
@@ -211,12 +177,21 @@
                 }
             });
 
-            // 6. 오버레이 회전 토글 (0도 ↔ 90도)
+            // 오버레이 회전 토글 (0도 ↔ 90도) + 가로/세로 맞춤 전환
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
                 overlay.style.transform = isRotated 
                     ? "translate(-50%, -50%) rotate(90deg)" 
                     : "translate(-50%, -50%) rotate(0deg)";
+
+                // 회전된 상태에서는 width와 height를 반대로 설정
+                if (isRotated) {
+                    overlay.style.width = (fitMode === "width") ? "auto" : "100%";
+                    overlay.style.height = (fitMode === "width") ? "100%" : "auto";
+                } else {
+                    overlay.style.width = (fitMode === "width") ? "100%" : "auto";
+                    overlay.style.height = (fitMode === "width") ? "auto" : "100%";
+                }
             });
         });
     </script>
