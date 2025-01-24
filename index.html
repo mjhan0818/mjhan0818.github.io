@@ -115,7 +115,7 @@
 
     <input type="file" id="upload" accept="image/*" class="hidden-input">
 
- <script>
+<script>
     document.addEventListener("DOMContentLoaded", () => {
         const video = document.getElementById("camera");
         const overlay = document.getElementById("overlay");
@@ -151,8 +151,8 @@
 
         function updateOverlaySize() {
             if (isRotated) {
-                overlay.style.width = fitMode === "width" ? "auto" : "100%";
-                overlay.style.height = fitMode === "width" ? "100%" : "auto";
+                overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                overlay.style.height = fitMode === "width" ? "auto" : "100%";
             } else {
                 overlay.style.width = fitMode === "width" ? "100%" : "auto";
                 overlay.style.height = fitMode === "width" ? "auto" : "100%";
@@ -171,12 +171,7 @@
                 ? "translate(-50%, -50%) rotate(90deg)" 
                 : "translate(-50%, -50%) rotate(0deg)";
             
-            // 회전 후 가로/세로 맞춤 적용 (회전된 크기 기준)
-            if (isRotated) {
-                fitMode = fitMode === "width" ? "height" : "width";
-                fitToggle.textContent = fitMode === "width" ? "가로" : "세로";
-            }
-
+            // ✅ 수정된 부분: 회전 후에도 가로/세로 맞춤이 회전된 크기에 맞게 적용되도록 변경
             updateOverlaySize();
         });
 
@@ -206,6 +201,7 @@
         updateOverlaySize();
     });
 </script>
+
 
 
 
