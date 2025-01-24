@@ -132,7 +132,6 @@
             let isRotated = false; 
             let fitMode = "width"; 
             let isWideMode = false; 
-            let a, b;
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(stream => {
@@ -145,29 +144,13 @@
             uploadBtn.addEventListener("click", () => upload.click());
             upload.addEventListener("change", (event) => {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    overlay.src = e.target.result;
-                    const img = new Image();
-                    img.onload = () => {
-                        a = img.naturalWidth;
-                        b = img.naturalHeight;
-                        updateOverlaySize();
-                    };
-                    img.src = e.target.result;
-                };
+                reader.onload = (e) => overlay.src = e.target.result;
                 reader.readAsDataURL(event.target.files[0]);
             });
 
             function updateOverlaySize() {
-                if (!overlay.src) return;
-                
-                if (isRotated) {
-                    overlay.style.width = fitMode === "width" ? `${b}px` : "auto";
-                    overlay.style.height = fitMode === "width" ? "auto" : `${a}px`;
-                } else {
-                    overlay.style.width = fitMode === "width" ? `${a}px` : "auto";
-                    overlay.style.height = fitMode === "width" ? "auto" : `${b}px`;
-                }
+                overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                overlay.style.height = fitMode === "width" ? "auto" : "100%";
             }
 
             fitToggle.addEventListener("click", () => {
@@ -178,11 +161,26 @@
 
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
-                [a, b] = [b, a];  
                 overlay.style.transform = isRotated 
                     ? "translate(-50%, -50%) rotate(90deg)" 
                     : "translate(-50%, -50%) rotate(0deg)";
                 updateOverlaySize();
+            });
+
+            aspectToggle.addEventListener("click", () => {
+                isWideMode = !isWideMode;
+                cameraContainer.classList.toggle("wide-mode", isWideMode);
+                aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
+            });
+
+            capture.addEventListener("click", () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const link = document.createElement("a");
+                link.href = canvas.toDataURL("image/png");
+                link.download = "capture.png";
+                link.click();
             });
 
             updateOverlaySize();
