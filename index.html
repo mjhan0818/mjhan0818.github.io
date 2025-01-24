@@ -116,42 +116,17 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const video = document.getElementById("camera");
             const overlay = document.getElementById("overlay");
-            const upload = document.getElementById("upload");
-            const uploadBtn = document.getElementById("uploadBtn");
             const fitToggle = document.getElementById("fitToggle");
             const rotateToggle = document.getElementById("rotateToggle");
-            const capture = document.getElementById("capture");
-            const aspectToggle = document.getElementById("aspectToggle");
-            const opacitySlider = document.getElementById("opacitySlider");
-            const cameraContainer = document.getElementById("cameraContainer");
-            const canvas = document.getElementById("canvas");
-            const ctx = canvas.getContext("2d");
 
-            let isRotated = false; 
-            let fitMode = "width"; 
-            let isWideMode = false; 
-
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("카메라 접근 실패:", err);
-                });
-
-            uploadBtn.addEventListener("click", () => upload.click());
-            upload.addEventListener("change", (event) => {
-                const reader = new FileReader();
-                reader.onload = (e) => overlay.src = e.target.result;
-                reader.readAsDataURL(event.target.files[0]);
-            });
+            let isRotated = false;
+            let fitMode = "width"; // 기본값: 가로 맞춤
 
             function updateOverlaySize() {
                 if (isRotated) {
-                    overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                    overlay.style.height = fitMode === "width" ? "auto" : "100%";
+                    overlay.style.width = fitMode === "width" ? "auto" : "100%";
+                    overlay.style.height = fitMode === "width" ? "100%" : "auto";
                 } else {
                     overlay.style.width = fitMode === "width" ? "100%" : "auto";
                     overlay.style.height = fitMode === "width" ? "auto" : "100%";
@@ -170,17 +145,11 @@
                     ? "translate(-50%, -50%) rotate(90deg)" 
                     : "translate(-50%, -50%) rotate(0deg)";
 
-                // ✅ 회전 시 가로/세로 맞춤을 자동으로 조정
+                // ✅ 90도 회전 후에도 가로/세로 맞춤이 제대로 적용되도록 조정
                 fitMode = fitMode === "width" ? "height" : "width";
                 fitToggle.textContent = fitMode === "width" ? "가로" : "세로";
-                
-                updateOverlaySize();
-            });
 
-            aspectToggle.addEventListener("click", () => {
-                isWideMode = !isWideMode;
-                cameraContainer.classList.toggle("wide-mode", isWideMode);
-                aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
+                updateOverlaySize();
             });
 
             updateOverlaySize();
