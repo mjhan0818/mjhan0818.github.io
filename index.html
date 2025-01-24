@@ -126,8 +126,6 @@
             const aspectToggle = document.getElementById("aspectToggle");
             const opacitySlider = document.getElementById("opacitySlider");
             const cameraContainer = document.getElementById("cameraContainer");
-            const canvas = document.getElementById("canvas");
-            const ctx = canvas.getContext("2d");
 
             let isRotated = false; 
             let fitMode = "width"; 
@@ -144,7 +142,10 @@
             uploadBtn.addEventListener("click", () => upload.click());
             upload.addEventListener("change", (event) => {
                 const reader = new FileReader();
-                reader.onload = (e) => overlay.src = e.target.result;
+                reader.onload = (e) => {
+                    overlay.src = e.target.result;
+                    overlay.onload = () => updateOverlaySize();
+                };
                 reader.readAsDataURL(event.target.files[0]);
             });
 
@@ -168,10 +169,23 @@
 
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
-                overlay.style.transform = isRotated 
-                    ? "translate(-50%, -50%) rotate(90deg) scale(1.0)" 
-                    : "translate(-50%, -50%) rotate(0deg) scale(1.0)";
+
+                // ✅ 회전 시 width/height를 서로 바꾸는 로직 추가
+                if (isRotated) {
+                    overlay.style.transform = "translate(-50%, -50%) rotate(90deg)";
+                    fitMode = fitMode === "width" ? "height" : "width";
+                } else {
+                    overlay.style.transform = "translate(-50%, -50%) rotate(0deg)";
+                    fitMode = fitMode === "width" ? "height" : "width";
+                }
+
                 updateOverlaySize();
+            });
+
+            aspectToggle.addEventListener("click", () => {
+                isWideMode = !isWideMode;
+                cameraContainer.classList.toggle("wide-mode", isWideMode);
+                aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
             });
 
             updateOverlaySize();
