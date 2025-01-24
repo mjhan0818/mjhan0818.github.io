@@ -40,17 +40,16 @@
             height: 100%;
             object-fit: cover;
         }
-        /* 오버레이 이미지 크기 조정 */
+        /* 오버레이 이미지 기본 설정 (가로 기준 맞춤) */
         img#overlay {
             position: absolute;
-            width: 100%;
+            width: 100%;  /* 기본값: 가로를 꽉 채움 */
             height: auto;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             opacity: 0.5;
             pointer-events: none;
-            object-fit: contain; /* 기본값: 세로에 맞춤 */
         }
         /* 투명도 조절 바 */
         .opacity-slider {
@@ -131,7 +130,7 @@
             <!-- 이미지 업로드 버튼 -->
             <div class="btn" id="uploadBtn">📷</div>
             <!-- 오버레이 맞춤 토글 버튼 -->
-            <div class="btn" id="fitToggle">세로</div>  
+            <div class="btn" id="fitToggle">가로</div>  
             <!-- 촬영 버튼 -->
             <div id="capture" class="btn"></div>
             <!-- 화면비 변경 버튼 -->
@@ -159,7 +158,7 @@
             const ctx = canvas.getContext("2d");
 
             let currentAspect = "3/4"; // 기본값 4:3
-            let fitMode = "contain"; // 기본값: 세로 맞춤
+            let fitMode = "width"; // 기본값: 가로 맞춤
 
             // 1. 카메라 화면 가져오기
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -192,22 +191,23 @@
                 overlay.style.opacity = opacitySlider.value;
             });
 
-            // 5. 오버레이 맞춤 방식 토글 (contain ↔ cover)
+            // 5. 오버레이 맞춤 방식 토글 (가로 ↔ 세로)
             fitToggle.addEventListener("click", () => {
-                if (fitMode === "contain") {
-                    overlay.style.objectFit = "cover";
-                    fitToggle.textContent = "가로";
-                    fitMode = "cover";
-                } else {
-                    overlay.style.objectFit = "contain";
+                if (fitMode === "width") {
+                    overlay.style.width = "auto";
+                    overlay.style.height = "100%";
                     fitToggle.textContent = "세로";
-                    fitMode = "contain";
+                    fitMode = "height";
+                } else {
+                    overlay.style.width = "100%";
+                    overlay.style.height = "auto";
+                    fitToggle.textContent = "가로";
+                    fitMode = "width";
                 }
             });
 
             // 6. 화면비 변경 기능 (4:3 ↔ 16:9)
-            aspectToggle.addEventListener("click", (event) => {
-                event.stopPropagation();
+            aspectToggle.addEventListener("click", () => {
                 if (currentAspect === "3/4") {
                     cameraContainer.classList.add("anime-camera");
                     aspectToggle.textContent = "4:3";
