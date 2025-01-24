@@ -68,16 +68,20 @@
             font-weight: bold;
             cursor: pointer;
             text-align: center;
+            position: relative; /* 위치 고정 */
         }
         .btn:active {
             background: rgba(255, 255, 255, 0.7);
         }
+        /* input[type="file"]가 다른 버튼을 가리지 않도록 설정 */
         .hidden-input {
             position: absolute;
             width: 100%;
             height: 100%;
             opacity: 0;
             cursor: pointer;
+            z-index: 1; /* 파일 선택 버튼이 다른 버튼보다 위에 올라가지 않도록 조정 */
+            pointer-events: auto; /* 클릭 이벤트 정상 동작 */
         }
         /* 16:9 모드 조정 */
         .anime-camera {
@@ -179,7 +183,8 @@
             });
 
             // 4. 화면비 변경 기능 (4:3 ↔ 16:9)
-            aspectToggle.addEventListener("click", () => {
+            aspectToggle.addEventListener("click", (event) => {
+                event.stopPropagation(); // 클릭 이벤트가 다른 버튼에 전달되지 않도록 방지
                 if (currentAspect === "3/4") {
                     cameraContainer.classList.add("anime-camera");
                     aspectToggle.textContent = "16:9";
