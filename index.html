@@ -24,7 +24,7 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -55%); /* 4:3에서 버튼보다 살짝 위 */
+            transform: translate(-50%, -55%);
             width: 90vw;
             max-width: 400px;
             aspect-ratio: 3 / 4;
@@ -79,17 +79,18 @@
             opacity: 0;
             cursor: pointer;
         }
-        /* 16:9 모드일 때 카메라 크기 조정 */
-        .wide-screen {
-            width: 100vw;
+        /* 16:9 모드일 때 세로를 화면 높이에 맞춤 */
+        .tall-screen {
+            height: 100vh !important;
+            width: auto !important;
             max-width: none;
-            aspect-ratio: 16 / 9 !important;
-            height: auto;
-            top: 52%; /* 너무 위로 올라가지 않도록 조정 */
-            transform: translate(-50%, -50%);
+            aspect-ratio: 16 / 9;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
         }
-        /* 16:9 모드일 때 버튼을 카메라 내부 하단에 배치 */
-        .wide-screen .controls {
+        /* 16:9 모드에서 버튼을 카메라 내부 하단에 배치 */
+        .tall-screen .controls {
             position: absolute;
             bottom: 10px;
             width: 100%;
@@ -179,11 +180,11 @@
             // 4. 화면비 변경 기능 (4:3 ↔ 16:9)
             aspectToggle.addEventListener("click", () => {
                 if (currentAspect === "3/4") {
-                    cameraContainer.classList.add("wide-screen");
+                    cameraContainer.classList.add("tall-screen");
                     aspectToggle.textContent = "16:9";
                     currentAspect = "16/9";
                 } else {
-                    cameraContainer.classList.remove("wide-screen");
+                    cameraContainer.classList.remove("tall-screen");
                     aspectToggle.textContent = "4:3";
                     currentAspect = "3/4";
                 }
