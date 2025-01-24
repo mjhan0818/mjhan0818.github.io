@@ -20,10 +20,11 @@
             position: relative;
             width: 100%;
             max-width: 400px;
-            aspect-ratio: 3 / 4;
+            aspect-ratio: 3 / 4; /* 기본값: 4:3 */
             overflow: hidden;
             border: 2px solid white;
             border-radius: 10px;
+            transition: aspect-ratio 0.3s ease;
         }
         video, img {
             position: absolute;
@@ -55,13 +56,18 @@
         .capture-btn:active {
             background: rgba(255, 255, 255, 0.7);
         }
-        input[type="file"], input[type="range"] {
+        .top-controls {
             position: absolute;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        select, input {
             background: rgba(0, 0, 0, 0.5);
             color: white;
+            border: none;
             padding: 5px;
             border-radius: 5px;
         }
@@ -70,13 +76,20 @@
 <body>
 
     <h1>성지순례 카메라</h1>
-    <div class="container">
+    <div class="container" id="cameraContainer">
         <video id="camera" autoplay playsinline></video>
         <img id="overlay" src="" alt="Overlay Image">
     </div>
 
-    <input type="file" id="upload" accept="image/*">
-    <input type="range" id="opacity" min="0" max="1" step="0.1" value="0.5">
+    <div class="top-controls">
+        <select id="aspectRatio">
+            <option value="3/4">4:3 (기본)</option>
+            <option value="16/9">16:9 (와이드)</option>
+            <option value="1/1">1:1 (정사각형)</option>
+        </select>
+        <input type="file" id="upload" accept="image/*">
+        <input type="range" id="opacity" min="0" max="1" step="0.1" value="0.5">
+    </div>
 
     <div class="controls">
         <button id="capture" class="capture-btn"></button>
@@ -91,6 +104,8 @@
             const upload = document.getElementById("upload");
             const opacity = document.getElementById("opacity");
             const capture = document.getElementById("capture");
+            const aspectRatioSelect = document.getElementById("aspectRatio");
+            const cameraContainer = document.getElementById("cameraContainer");
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
@@ -140,6 +155,11 @@
                 link.href = canvas.toDataURL("image/png");
                 link.download = "성지순례.png";
                 link.click();
+            });
+
+            // 5. 화면비 변경 기능
+            aspectRatioSelect.addEventListener("change", (event) => {
+                cameraContainer.style.aspectRatio = event.target.value;
             });
         });
     </script>
