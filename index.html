@@ -47,7 +47,7 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) rotate(0deg);
+            transform: translate(-50%, -50%);
             opacity: 0.5;
             pointer-events: none;
             transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
@@ -130,7 +130,7 @@
             let isRotated = false; 
             let fitMode = "width"; 
             let isWideMode = false; 
-            let originalWidth, originalHeight;
+            let originalImage = null;
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(stream => {
@@ -144,29 +144,36 @@
             upload.addEventListener("change", (event) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    overlay.src = e.target.result;
-                    overlay.onload = () => {
-                        originalWidth = overlay.naturalWidth;
-                        originalHeight = overlay.naturalHeight;
-                        updateOverlaySize();
-                    };
+                    originalImage = new Image();
+                    originalImage.onload = () => updateOverlayImage();
+                    originalImage.src = e.target.result;
                 };
                 reader.readAsDataURL(event.target.files[0]);
             });
 
-            function updateOverlaySize() {
-                if (!overlay.src) return;
+            function updateOverlayImage() {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
 
-                let width = isRotated ? originalHeight : originalWidth;
-                let height = isRotated ? originalWidth : originalHeight;
-
-                if (fitMode === "width") {
-                    overlay.style.width = "100%";
-                    overlay.style.height = "auto";
+                if (isRotated) {
+                    canvas.width = originalImage.height;
+                    canvas.height = originalImage.width;
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate(Math.PI / 2);
+                    ctx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
                 } else {
-                    overlay.style.width = "auto";
-                    overlay.style.height = "100%";
+                    canvas.width = originalImage.width;
+                    canvas.height = originalImage.height;
+                    ctx.drawImage(originalImage, 0, 0);
                 }
+
+                overlay.src = canvas.toDataURL();
+                updateOverlaySize();
+            }
+
+            function updateOverlaySize() {
+                overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                overlay.style.height = fitMode === "width" ? "auto" : "100%";
             }
 
             fitToggle.addEventListener("click", () => {
@@ -177,10 +184,7 @@
 
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
-                overlay.style.transform = isRotated 
-                    ? "translate(-50%, -50%) rotate(90deg)" 
-                    : "translate(-50%, -50%) rotate(0deg)";
-                updateOverlaySize();
+                updateOverlayImage();
             });
 
             aspectToggle.addEventListener("click", () => {
