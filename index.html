@@ -19,7 +19,7 @@
             align-items: center;
             position: fixed;
         }
-        /* 카메라 화면 기본 설정 (4:3) */
+        /* 기본 카메라 화면 (4:3) */
         .container {
             position: fixed;
             top: 50%;
@@ -79,24 +79,19 @@
             opacity: 0;
             cursor: pointer;
         }
-        /* 16:9 모드에서 확대되지 않게 조정 */
-        .wide-screen {
-            height: 100vh !important; /* 세로를 화면에 맞춤 */
-            width: auto !important; /* 가로를 자동 조정 */
-            max-width: none;
-            aspect-ratio: unset;
-            top: 0;
+        /* 16:9 모드 조정 */
+        .anime-camera {
+            width: 100vw;
+            max-width: 700px;
+            height: calc(100vh - 100px); /* 위아래 약간 여백을 남김 */
+            aspect-ratio: 16 / 9;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-        }
-        /* 16:9 모드에서 비율 깨지지 않도록 설정 */
-        .wide-screen video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain !important; /* 가득 차도록 설정 */
+            transform: translate(-50%, -50%);
+            border-radius: 15px;
         }
         /* 16:9 모드에서 버튼을 카메라 내부 하단에 배치 */
-        .wide-screen .controls {
+        .anime-camera .controls {
             position: absolute;
             bottom: 10px;
             width: 100%;
@@ -186,11 +181,11 @@
             // 4. 화면비 변경 기능 (4:3 ↔ 16:9)
             aspectToggle.addEventListener("click", () => {
                 if (currentAspect === "3/4") {
-                    cameraContainer.classList.add("wide-screen");
+                    cameraContainer.classList.add("anime-camera");
                     aspectToggle.textContent = "16:9";
                     currentAspect = "16/9";
                 } else {
-                    cameraContainer.classList.remove("wide-screen");
+                    cameraContainer.classList.remove("anime-camera");
                     aspectToggle.textContent = "4:3";
                     currentAspect = "3/4";
                 }
