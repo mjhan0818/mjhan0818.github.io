@@ -1,0 +1,32 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #222;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+}
+
+video, img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+img {
+    opacity: 0.5; /* 기본 투명도 설정 */
+    pointer-events: none;
+}
+
+input[type="file"], input[type="range"], button {
+    position: relative;
+    margin-top: 10px;
+}
