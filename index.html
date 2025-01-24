@@ -171,7 +171,13 @@
                     : "translate(-50%, -50%) rotate(0deg)";
 
                 // ✅ 수정된 부분: 회전 후에도 가로/세로 맞춤이 회전된 크기에 맞게 적용되도록 변경
-                [overlay.style.width, overlay.style.height] = [overlay.style.height, overlay.style.width];
+                if (isRotated) {
+                    fitMode = fitMode === "width" ? "height" : "width";
+                } else {
+                    fitMode = fitMode === "height" ? "width" : "height"; // 원래대로 복구
+                }
+
+                fitToggle.textContent = fitMode === "width" ? "가로" : "세로";
                 updateOverlaySize();
             });
 
