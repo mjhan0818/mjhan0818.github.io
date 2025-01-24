@@ -54,8 +54,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
             position: relative;
+            text-align: center;
         }
         .btn:active {
             background: rgba(255, 255, 255, 0.7);
@@ -67,19 +70,6 @@
             opacity: 0;
             cursor: pointer;
         }
-        .top-controls {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        select {
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            padding: 5px;
-            border-radius: 5px;
-        }
     </style>
 </head>
 <body>
@@ -88,14 +78,6 @@
     <div class="container" id="cameraContainer">
         <video id="camera" autoplay playsinline></video>
         <img id="overlay" src="" alt="Overlay Image">
-    </div>
-
-    <div class="top-controls">
-        <select id="aspectRatio">
-            <option value="3/4">4:3 (기본)</option>
-            <option value="16/9">16:9 (와이드)</option>
-            <option value="1/1">1:1 (정사각형)</option>
-        </select>
     </div>
 
     <div class="controls">
@@ -107,6 +89,9 @@
 
         <!-- 촬영 버튼 -->
         <div id="capture" class="btn"></div>
+
+        <!-- 화면비 변경 버튼 -->
+        <div id="aspectToggle" class="btn">4:3</div>
     </div>
 
     <canvas id="canvas" style="display: none;"></canvas>
@@ -117,10 +102,12 @@
             const overlay = document.getElementById("overlay");
             const upload = document.getElementById("upload");
             const capture = document.getElementById("capture");
-            const aspectRatioSelect = document.getElementById("aspectRatio");
+            const aspectToggle = document.getElementById("aspectToggle");
             const cameraContainer = document.getElementById("cameraContainer");
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
+
+            let currentAspect = "3/4"; // 기본값 4:3
 
             // 1. 카메라 화면 가져오기
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -165,9 +152,17 @@
                 link.click();
             });
 
-            // 4. 화면비 변경 기능
-            aspectRatioSelect.addEventListener("change", (event) => {
-                cameraContainer.style.aspectRatio = event.target.value;
+            // 4. 화면비 변경 기능 (4:3 ↔ 16:9)
+            aspectToggle.addEventListener("click", () => {
+                if (currentAspect === "3/4") {
+                    cameraContainer.style.aspectRatio = "16/9";
+                    aspectToggle.textContent = "16:9";
+                    currentAspect = "16/9";
+                } else {
+                    cameraContainer.style.aspectRatio = "3/4";
+                    aspectToggle.textContent = "4:3";
+                    currentAspect = "3/4";
+                }
             });
         });
     </script>
