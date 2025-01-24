@@ -116,73 +116,48 @@
     <input type="file" id="upload" accept="image/*" class="hidden-input">
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const video = document.getElementById("camera");
-            const overlay = document.getElementById("overlay");
-            const upload = document.getElementById("upload");
-            const uploadBtn = document.getElementById("uploadBtn");
-            const fitToggle = document.getElementById("fitToggle");
-            const rotateToggle = document.getElementById("rotateToggle");
-            const capture = document.getElementById("capture");
-            const aspectToggle = document.getElementById("aspectToggle");
-            const opacitySlider = document.getElementById("opacitySlider");
-            const cameraContainer = document.getElementById("cameraContainer");
-            const canvas = document.getElementById("canvas");
-            const ctx = canvas.getContext("2d");
+    document.addEventListener("DOMContentLoaded", () => {
+        const overlay = document.getElementById("overlay");
+        const fitToggle = document.getElementById("fitToggle");
+        const rotateToggle = document.getElementById("rotateToggle");
 
-            let isRotated = false; 
-            let fitMode = "width"; 
-            let isWideMode = false; 
+        let isRotated = false; // 이미지 회전 상태
+        let fitMode = "width"; // 기본값: 가로 맞춤
 
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("카메라 접근 실패:", err);
-                });
-
-            uploadBtn.addEventListener("click", () => upload.click());
-            upload.addEventListener("change", (event) => {
-                const reader = new FileReader();
-                reader.onload = (e) => overlay.src = e.target.result;
-                reader.readAsDataURL(event.target.files[0]);
-            });
-
-            function updateOverlaySize() {
-                if (isRotated) {
-                    overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                    overlay.style.height = fitMode === "width" ? "auto" : "100%";
-                } else {
-                    overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                    overlay.style.height = fitMode === "width" ? "auto" : "100%";
-                }
+        function updateOverlaySize() {
+            if (isRotated) {
+                overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                overlay.style.height = fitMode === "width" ? "auto" : "100%";
+            } else {
+                overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                overlay.style.height = fitMode === "width" ? "auto" : "100%";
             }
+        }
 
-            fitToggle.addEventListener("click", () => {
+        fitToggle.addEventListener("click", () => {
+            fitMode = fitMode === "width" ? "height" : "width";
+            fitToggle.textContent = fitMode === "width" ? "가로" : "세로";
+            updateOverlaySize();
+        });
+
+        rotateToggle.addEventListener("click", () => {
+            isRotated = !isRotated;
+            overlay.style.transform = isRotated 
+                ? "translate(-50%, -50%) rotate(90deg)" 
+                : "translate(-50%, -50%) rotate(0deg)";
+            
+            // 회전 후 가로/세로 비율 반대로 적용
+            if (isRotated) {
                 fitMode = fitMode === "width" ? "height" : "width";
-                fitToggle.textContent = fitMode === "width" ? "가로" : "세로";
-                updateOverlaySize();
-            });
-
-            rotateToggle.addEventListener("click", () => {
-                isRotated = !isRotated;
-                overlay.style.transform = isRotated 
-                    ? "translate(-50%, -50%) rotate(90deg)" 
-                    : "translate(-50%, -50%) rotate(0deg)";
-                [overlay.style.width, overlay.style.height] = [overlay.style.height, overlay.style.width];
-                updateOverlaySize();
-            });
-
-            aspectToggle.addEventListener("click", () => {
-                isWideMode = !isWideMode;
-                cameraContainer.classList.toggle("wide-mode", isWideMode);
-                aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
-            });
+            }
 
             updateOverlaySize();
         });
-    </script>
+
+        updateOverlaySize();
+    });
+</script>
+
 
 </body>
 </html>
