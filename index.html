@@ -50,7 +50,7 @@
             transform: translate(-50%, -50%);
             opacity: 0.5;
             pointer-events: none;
-            transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
+            transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.2s ease;
             z-index: 15;
         }
         .opacity-slider {
@@ -94,6 +94,9 @@
 </head>
 <body>
 
+    <h1>성지순례 카메라</h1>
+
+    <!-- ✅ 오버레이 투명도 조절 슬라이더 -->
     <input type="range" id="opacitySlider" class="opacity-slider" min="0" max="1" step="0.05" value="0.5">
 
     <div class="container" id="cameraContainer">
@@ -150,22 +153,7 @@
             });
 
             function updateOverlayImage() {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-
-                if (isRotated) {
-                    canvas.width = originalImage.height;
-                    canvas.height = originalImage.width;
-                    ctx.translate(canvas.width / 2, canvas.height / 2);
-                    ctx.rotate(Math.PI / 2);
-                    ctx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
-                } else {
-                    canvas.width = originalImage.width;
-                    canvas.height = originalImage.height;
-                    ctx.drawImage(originalImage, 0, 0);
-                }
-
-                overlay.src = canvas.toDataURL();
+                overlay.src = originalImage.src;
                 updateOverlaySize();
             }
 
@@ -182,7 +170,9 @@
 
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
-                updateOverlayImage();
+                overlay.style.transform = isRotated 
+                    ? "translate(-50%, -50%) rotate(90deg)" 
+                    : "translate(-50%, -50%) rotate(0deg)";
             });
 
             aspectToggle.addEventListener("click", () => {
@@ -191,21 +181,9 @@
                 aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
             });
 
-            // ✅ **촬영 기능 추가**
-            capture.addEventListener("click", () => {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-
-                // 비디오 화면 크기에 맞게 캔버스 설정
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                // 이미지 다운로드 링크 생성
-                const link = document.createElement("a");
-                link.href = canvas.toDataURL("image/png");
-                link.download = "captured_image.png";
-                link.click();
+            // ✅ 오버레이 이미지 투명도 조절 기능 추가
+            opacitySlider.addEventListener("input", () => {
+                overlay.style.opacity = opacitySlider.value;
             });
 
             updateOverlaySize();
