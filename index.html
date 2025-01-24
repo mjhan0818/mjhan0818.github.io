@@ -79,18 +79,24 @@
             opacity: 0;
             cursor: pointer;
         }
-        /* 16:9 모드일 때 세로를 화면 높이에 맞춤 */
-        .tall-screen {
-            height: 100vh !important;
-            width: auto !important;
+        /* 16:9 모드에서 확대되지 않게 조정 */
+        .wide-screen {
+            height: 100vh !important; /* 세로를 화면에 맞춤 */
+            width: auto !important; /* 가로를 자동 조정 */
             max-width: none;
-            aspect-ratio: 16 / 9;
+            aspect-ratio: unset;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
         }
+        /* 16:9 모드에서 비율 깨지지 않도록 설정 */
+        .wide-screen video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain !important; /* 가득 차도록 설정 */
+        }
         /* 16:9 모드에서 버튼을 카메라 내부 하단에 배치 */
-        .tall-screen .controls {
+        .wide-screen .controls {
             position: absolute;
             bottom: 10px;
             width: 100%;
@@ -180,11 +186,11 @@
             // 4. 화면비 변경 기능 (4:3 ↔ 16:9)
             aspectToggle.addEventListener("click", () => {
                 if (currentAspect === "3/4") {
-                    cameraContainer.classList.add("tall-screen");
+                    cameraContainer.classList.add("wide-screen");
                     aspectToggle.textContent = "16:9";
                     currentAspect = "16/9";
                 } else {
-                    cameraContainer.classList.remove("tall-screen");
+                    cameraContainer.classList.remove("wide-screen");
                     aspectToggle.textContent = "4:3";
                     currentAspect = "3/4";
                 }
