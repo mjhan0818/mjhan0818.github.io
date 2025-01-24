@@ -19,7 +19,7 @@
             align-items: center;
             position: fixed;
         }
-        /* 기본 카메라 화면 (4:3) */
+        /* 기본 카메라 화면 */
         .container {
             position: fixed;
             top: 50%;
@@ -143,7 +143,7 @@
 
             let isRotated = false;
             let fitMode = "width";
-            let isFullHeight = false; // 현재 화면비 상태 저장
+            let isFullHeight = false;
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(stream => {
@@ -173,16 +173,30 @@
             });
 
             fitToggle.addEventListener("click", () => {
-                if (fitMode === "width") {
-                    overlay.style.width = "auto";
-                    overlay.style.height = "100%";
-                    fitToggle.textContent = "세로";
-                    fitMode = "height";
+                if (isRotated) {
+                    if (fitMode === "width") {
+                        overlay.style.height = "auto";
+                        overlay.style.width = "100%";
+                        fitToggle.textContent = "세로";
+                        fitMode = "height";
+                    } else {
+                        overlay.style.height = "100%";
+                        overlay.style.width = "auto";
+                        fitToggle.textContent = "가로";
+                        fitMode = "width";
+                    }
                 } else {
-                    overlay.style.width = "100%";
-                    overlay.style.height = "auto";
-                    fitToggle.textContent = "가로";
-                    fitMode = "width";
+                    if (fitMode === "width") {
+                        overlay.style.width = "auto";
+                        overlay.style.height = "100%";
+                        fitToggle.textContent = "세로";
+                        fitMode = "height";
+                    } else {
+                        overlay.style.width = "100%";
+                        overlay.style.height = "auto";
+                        fitToggle.textContent = "가로";
+                        fitMode = "width";
+                    }
                 }
             });
 
@@ -191,21 +205,12 @@
                 overlay.style.transform = isRotated 
                     ? "translate(-50%, -50%) rotate(90deg)" 
                     : "translate(-50%, -50%) rotate(0deg)";
-
-                [overlay.style.width, overlay.style.height] = 
-                    [overlay.style.height, overlay.style.width];
             });
 
             aspectToggle.addEventListener("click", () => {
                 isFullHeight = !isFullHeight;
-                if (isFullHeight) {
-                    cameraContainer.classList.add("full-height");
-                    aspectToggle.textContent = "4:3";
-                } else {
-                    cameraContainer.classList.remove("full-height");
-                    cameraContainer.style.aspectRatio = "3 / 4";
-                    aspectToggle.textContent = "16:9";
-                }
+                cameraContainer.classList.toggle("full-height", isFullHeight);
+                aspectToggle.textContent = isFullHeight ? "4:3" : "16:9";
             });
         });
     </script>
