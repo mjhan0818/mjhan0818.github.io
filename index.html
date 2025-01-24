@@ -85,13 +85,13 @@
             font-weight: bold;
             cursor: pointer;
             text-align: center;
-            color: black; /* 버튼 안의 글씨를 검은색으로 설정 */
+            color: black;
             position: relative;
         }
         .btn:active {
             background: rgba(255, 255, 255, 0.7);
         }
-        /* 숨겨진 파일 선택 버튼 */
+        /* 파일 선택 input 숨기기 */
         .hidden-input {
             position: absolute;
             width: 100%;
@@ -100,9 +100,7 @@
             cursor: pointer;
             z-index: 1;
             pointer-events: auto;
-        }
-        input[type="file"] {
-            display: none; /* 불필요한 "파일 선택" 버튼 숨김 */
+            display: none; /* 파일 선택 버튼 숨김 */
         }
         /* 16:9 모드 조정 */
         .anime-camera {
@@ -137,10 +135,9 @@
         <video id="camera" autoplay playsinline></video>
         <img id="overlay" src="" alt="Overlay Image">
         <div class="controls">
-            <!-- 이미지 업로드 버튼 -->
-            <div class="btn">
+            <!-- 이미지 업로드 버튼 (파일 선택 숨김) -->
+            <div class="btn" id="uploadBtn">
                 📷
-                <input type="file" id="upload" accept="image/*" class="hidden-input">
             </div>
             <!-- 촬영 버튼 -->
             <div id="capture" class="btn"></div>
@@ -151,11 +148,15 @@
 
     <canvas id="canvas" style="display: none;"></canvas>
 
+    <!-- 파일 업로드 input (숨김) -->
+    <input type="file" id="upload" accept="image/*" class="hidden-input">
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const video = document.getElementById("camera");
             const overlay = document.getElementById("overlay");
             const upload = document.getElementById("upload");
+            const uploadBtn = document.getElementById("uploadBtn");
             const capture = document.getElementById("capture");
             const aspectToggle = document.getElementById("aspectToggle");
             const opacitySlider = document.getElementById("opacitySlider");
@@ -174,7 +175,12 @@
                     console.error("카메라 접근 실패:", err);
                 });
 
-            // 2. 이미지 업로드 및 오버레이 적용
+            // 2. 파일 업로드 버튼 클릭 시 파일 선택창 열기
+            uploadBtn.addEventListener("click", () => {
+                upload.click();
+            });
+
+            // 3. 이미지 업로드 및 오버레이 적용
             upload.addEventListener("change", (event) => {
                 const file = event.target.files[0];
                 if (file) {
@@ -186,31 +192,9 @@
                 }
             });
 
-            // 3. 투명도 조절 기능
+            // 4. 투명도 조절 기능
             opacitySlider.addEventListener("input", () => {
                 overlay.style.opacity = opacitySlider.value;
-            });
-
-            // 4. 사진 찍기 기능
-            capture.addEventListener("click", () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                // 카메라 화면을 캡처
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                // 오버레이 이미지도 같이 합성
-                if (overlay.src) {
-                    ctx.globalAlpha = overlay.style.opacity;
-                    ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
-                    ctx.globalAlpha = 1;
-                }
-
-                // 이미지 다운로드
-                const link = document.createElement("a");
-                link.href = canvas.toDataURL("image/png");
-                link.download = "성지순례.png";
-                link.click();
             });
 
             // 5. 화면비 변경 기능 (4:3 ↔ 16:9)
@@ -218,11 +202,11 @@
                 event.stopPropagation();
                 if (currentAspect === "3/4") {
                     cameraContainer.classList.add("anime-camera");
-                    aspectToggle.textContent = "4:3";  // 16:9일 때 "4:3" 표시
+                    aspectToggle.textContent = "4:3";
                     currentAspect = "16/9";
                 } else {
                     cameraContainer.classList.remove("anime-camera");
-                    aspectToggle.textContent = "16:9";  // 4:3일 때 "16:9" 표시
+                    aspectToggle.textContent = "16:9";
                     currentAspect = "3/4";
                 }
             });
