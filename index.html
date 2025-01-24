@@ -40,16 +40,17 @@
             height: 100%;
             object-fit: cover;
         }
-        /* 오버레이 이미지 기본 설정 (가로 기준 맞춤) */
+        /* 오버레이 이미지 기본 설정 */
         img#overlay {
             position: absolute;
-            width: 100%;  /* 기본값: 가로를 꽉 채움 */
+            width: 100%;
             height: auto;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) rotate(0deg);
             opacity: 0.5;
             pointer-events: none;
+            transition: transform 0.3s ease;
         }
         /* 투명도 조절 바 */
         .opacity-slider {
@@ -135,6 +136,8 @@
             <div id="capture" class="btn"></div>
             <!-- 화면비 변경 버튼 -->
             <div id="aspectToggle" class="btn">16:9</div>
+            <!-- 오버레이 회전 버튼 -->
+            <div class="btn" id="rotateToggle">↻</div>  
         </div>
     </div>
 
@@ -150,6 +153,7 @@
             const upload = document.getElementById("upload");
             const uploadBtn = document.getElementById("uploadBtn");
             const fitToggle = document.getElementById("fitToggle");
+            const rotateToggle = document.getElementById("rotateToggle");
             const capture = document.getElementById("capture");
             const aspectToggle = document.getElementById("aspectToggle");
             const opacitySlider = document.getElementById("opacitySlider");
@@ -159,6 +163,7 @@
 
             let currentAspect = "3/4"; // 기본값 4:3
             let fitMode = "width"; // 기본값: 가로 맞춤
+            let isRotated = false; // 현재 회전 상태 저장
 
             // 1. 카메라 화면 가져오기
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -206,17 +211,12 @@
                 }
             });
 
-            // 6. 화면비 변경 기능 (4:3 ↔ 16:9)
-            aspectToggle.addEventListener("click", () => {
-                if (currentAspect === "3/4") {
-                    cameraContainer.classList.add("anime-camera");
-                    aspectToggle.textContent = "4:3";
-                    currentAspect = "16/9";
-                } else {
-                    cameraContainer.classList.remove("anime-camera");
-                    aspectToggle.textContent = "16:9";
-                    currentAspect = "3/4";
-                }
+            // 6. 오버레이 회전 토글 (0도 ↔ 90도)
+            rotateToggle.addEventListener("click", () => {
+                isRotated = !isRotated;
+                overlay.style.transform = isRotated 
+                    ? "translate(-50%, -50%) rotate(90deg)" 
+                    : "translate(-50%, -50%) rotate(0deg)";
             });
         });
     </script>
