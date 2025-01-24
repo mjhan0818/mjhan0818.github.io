@@ -35,7 +35,7 @@
             z-index: 10;
             background: black;
         }
-        /* 16:9 모드 (세로 16) */
+        /* 16:9 모드 */
         .full-height {
             height: 100vh !important;
             width: auto !important;
@@ -141,9 +141,9 @@
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
-            let isRotated = false;
-            let fitMode = "width";
-            let isFullHeight = false;
+            let isRotated = false; // 회전 상태
+            let fitMode = "width"; // 가로 맞춤 기본값
+            let isFullHeight = false; // 16:9 모드 상태
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(stream => {
@@ -173,6 +173,7 @@
             });
 
             fitToggle.addEventListener("click", () => {
+                // 회전 상태에 따라 가로 ↔ 세로 기준 반전
                 if (isRotated) {
                     if (fitMode === "width") {
                         overlay.style.height = "auto";
@@ -209,8 +210,14 @@
 
             aspectToggle.addEventListener("click", () => {
                 isFullHeight = !isFullHeight;
-                cameraContainer.classList.toggle("full-height", isFullHeight);
-                aspectToggle.textContent = isFullHeight ? "4:3" : "16:9";
+                if (isFullHeight) {
+                    cameraContainer.classList.add("full-height");
+                    aspectToggle.textContent = "4:3";
+                } else {
+                    cameraContainer.classList.remove("full-height");
+                    cameraContainer.style.aspectRatio = "3 / 4";
+                    aspectToggle.textContent = "16:9";
+                }
             });
         });
     </script>
