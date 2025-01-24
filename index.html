@@ -90,6 +90,13 @@
         .btn:active {
             background: rgba(255, 255, 255, 0.7);
         }
+        /* 화면비 변경 버튼 위에 현재 화면비 표시 */
+        .btn-label {
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+            color: white;
+        }
         /* 16:9 모드 조정 */
         .anime-camera {
             width: 100vw;
@@ -131,7 +138,10 @@
             <!-- 촬영 버튼 -->
             <div id="capture" class="btn"></div>
             <!-- 화면비 변경 버튼 -->
-            <div id="aspectToggle" class="btn">4:3</div>
+            <div id="aspectToggle" class="btn">
+                <span class="btn-label" id="aspectLabel">16:9</span>  <!-- 현재 선택 가능한 화면비 표시 -->
+                변경
+            </div>
         </div>
     </div>
 
@@ -144,6 +154,7 @@
             const upload = document.getElementById("upload");
             const capture = document.getElementById("capture");
             const aspectToggle = document.getElementById("aspectToggle");
+            const aspectLabel = document.getElementById("aspectLabel");
             const opacitySlider = document.getElementById("opacitySlider");
             const cameraContainer = document.getElementById("cameraContainer");
             const canvas = document.getElementById("canvas");
@@ -204,11 +215,11 @@
                 event.stopPropagation();
                 if (currentAspect === "3/4") {
                     cameraContainer.classList.add("anime-camera");
-                    aspectToggle.textContent = "16:9";
+                    aspectLabel.textContent = "4:3";  // 다음 화면비를 표시
                     currentAspect = "16/9";
                 } else {
                     cameraContainer.classList.remove("anime-camera");
-                    aspectToggle.textContent = "4:3";
+                    aspectLabel.textContent = "16:9";  // 다음 화면비를 표시
                     currentAspect = "3/4";
                 }
             });
