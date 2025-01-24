@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>성지순례 카메라</title>
     <style>
-        /* 스크롤 방지 */
+        /* 전체 레이아웃 */
         html, body {
             width: 100%;
             height: 100%;
@@ -19,7 +19,7 @@
             align-items: center;
             position: fixed;
         }
-        /* 기본 카메라 화면 (4:3) */
+        /* 카메라 컨테이너 */
         .container {
             position: fixed;
             top: 50%;
@@ -101,6 +101,28 @@
         .btn:active {
             background: rgba(255, 255, 255, 0.7);
         }
+        /* 미리보기 팝업 */
+        .preview-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 50;
+            text-align: center;
+        }
+        .preview-container img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        .preview-buttons {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
     </style>
 </head>
 <body>
@@ -122,6 +144,15 @@
         </div>
     </div>
 
+    <!-- 촬영 미리보기 팝업 -->
+    <div class="preview-container" id="previewContainer">
+        <img id="previewImage" alt="촬영 미리보기">
+        <div class="preview-buttons">
+            <button id="downloadBtn">다운로드</button>
+            <button id="closePreview">닫기</button>
+        </div>
+    </div>
+
     <canvas id="canvas" style="display: none;"></canvas>
 
     <input type="file" id="upload" accept="image/*" class="hidden-input">
@@ -137,58 +168,33 @@
             const capture = document.getElementById("capture");
             const aspectToggle = document.getElementById("aspectToggle");
             const opacitySlider = document.getElementById("opacitySlider");
+            const previewContainer = document.getElementById("previewContainer");
+            const previewImage = document.getElementById("previewImage");
+            const downloadBtn = document.getElementById("downloadBtn");
+            const closePreview = document.getElementById("closePreview");
             const cameraContainer = document.getElementById("cameraContainer");
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
             let isRotated = false;
-            let fitMode = "width";
-            let isTallMode = false; // 16:9 모드 상태
+            let isTallMode = false;
 
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("카메라 접근 실패:", err);
-                });
-
-            uploadBtn.addEventListener("click", () => {
-                upload.click();
-            });
-
+            uploadBtn.addEventListener("click", () => upload.click());
             upload.addEventListener("change", (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        overlay.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            opacitySlider.addEventListener("input", () => {
-                overlay.style.opacity = opacitySlider.value;
+                const reader = new FileReader();
+                reader.onload = (e) => overlay.src = e.target.result;
+                reader.readAsDataURL(event.target.files[0]);
             });
 
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
-                overlay.style.transform = isRotated 
-                    ? "translate(-50%, -50%) rotate(90deg)" 
-                    : "translate(-50%, -50%) rotate(0deg)";
+                overlay.style.transform = isRotated ? "rotate(90deg)" : "rotate(0deg)";
             });
 
             aspectToggle.addEventListener("click", () => {
                 isTallMode = !isTallMode;
-                if (isTallMode) {
-                    cameraContainer.classList.add("tall-mode");
-                    aspectToggle.textContent = "4:3";
-                } else {
-                    cameraContainer.classList.remove("tall-mode");
-                    cameraContainer.style.aspectRatio = "3 / 4";
-                    aspectToggle.textContent = "16:9";
-                }
+                cameraContainer.classList.toggle("tall-mode", isTallMode);
+                aspectToggle.textContent = isTallMode ? "4:3" : "16:9";
             });
         });
     </script>
