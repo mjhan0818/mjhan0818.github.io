@@ -32,7 +32,7 @@
             border: 2px solid white;
             border-radius: 10px;
             transition: all 0.3s ease;
-            z-index: 10; /* 카메라 화면이 버튼보다 위로 배치 */
+            z-index: 10;
         }
         video, img {
             position: absolute;
@@ -53,7 +53,7 @@
             display: flex;
             align-items: center;
             gap: 20px;
-            z-index: 20; /* 버튼이 카메라보다 위 */
+            z-index: 20;
         }
         .btn {
             width: 60px;
@@ -79,23 +79,19 @@
             opacity: 0;
             cursor: pointer;
         }
-        /* 16:9 모드일 때 카메라 전체 화면 */
-        .full-screen {
-            width: 100vw !important;
-            height: 100vh !important;
+        /* 16:9 모드일 때 카메라 크기 조정 */
+        .wide-screen {
+            width: 100vw;
             max-width: none;
-            max-height: none;
-            aspect-ratio: unset !important;
-            top: 0;
-            left: 0;
-            transform: none;
-            border: none;
-            border-radius: 0;
+            aspect-ratio: 16 / 9 !important;
+            height: auto;
+            top: 52%; /* 너무 위로 올라가지 않도록 조정 */
+            transform: translate(-50%, -50%);
         }
-        /* 16:9 모드일 때 버튼 위치 변경 (카메라 내부 하단) */
-        .full-screen .controls {
+        /* 16:9 모드일 때 버튼을 카메라 내부 하단에 배치 */
+        .wide-screen .controls {
             position: absolute;
-            bottom: 20px;
+            bottom: 10px;
             width: 100%;
             display: flex;
             justify-content: center;
@@ -170,7 +166,7 @@
                 if (overlay.src) {
                     ctx.globalAlpha = overlay.style.opacity;
                     ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
-                    ctx.globalAlpha = 1; // 원래대로 복구
+                    ctx.globalAlpha = 1;
                 }
 
                 // 이미지 다운로드
@@ -183,11 +179,11 @@
             // 4. 화면비 변경 기능 (4:3 ↔ 16:9)
             aspectToggle.addEventListener("click", () => {
                 if (currentAspect === "3/4") {
-                    cameraContainer.classList.add("full-screen");
+                    cameraContainer.classList.add("wide-screen");
                     aspectToggle.textContent = "16:9";
                     currentAspect = "16/9";
                 } else {
-                    cameraContainer.classList.remove("full-screen");
+                    cameraContainer.classList.remove("wide-screen");
                     aspectToggle.textContent = "4:3";
                     currentAspect = "3/4";
                 }
