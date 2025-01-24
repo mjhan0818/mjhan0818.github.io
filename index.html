@@ -115,6 +115,7 @@
 
     <input type="file" id="upload" accept="image/*" class="hidden-input">
 
+
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const video = document.getElementById("camera");
@@ -151,8 +152,8 @@
 
         function updateOverlaySize() {
             if (isRotated) {
-                overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                overlay.style.height = fitMode === "width" ? "auto" : "100%";
+                overlay.style.width = fitMode === "width" ? "auto" : "100%";
+                overlay.style.height = fitMode === "width" ? "100%" : "auto";
             } else {
                 overlay.style.width = fitMode === "width" ? "100%" : "auto";
                 overlay.style.height = fitMode === "width" ? "auto" : "100%";
@@ -170,9 +171,15 @@
             overlay.style.transform = isRotated 
                 ? "translate(-50%, -50%) rotate(90deg)" 
                 : "translate(-50%, -50%) rotate(0deg)";
-            
+
             // ✅ 수정된 부분: 회전 후에도 가로/세로 맞춤이 회전된 크기에 맞게 적용되도록 변경
-            updateOverlaySize();
+            if (isRotated) {
+                overlay.style.width = fitMode === "width" ? "auto" : "100%";
+                overlay.style.height = fitMode === "width" ? "100%" : "auto";
+            } else {
+                overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                overlay.style.height = fitMode === "width" ? "auto" : "100%";
+            }
         });
 
         aspectToggle.addEventListener("click", () => {
