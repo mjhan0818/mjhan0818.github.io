@@ -50,7 +50,7 @@
             transform: translate(-50%, -50%);
             opacity: 0.5;
             pointer-events: none;
-            object-fit: contain;
+            object-fit: contain; /* 기본값: 세로에 맞춤 */
         }
         /* 투명도 조절 바 */
         .opacity-slider {
@@ -93,14 +93,7 @@
         }
         /* 파일 선택 input 숨기기 */
         .hidden-input {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-            z-index: 1;
-            pointer-events: auto;
-            display: none; /* 파일 선택 버튼 숨김 */
+            display: none;
         }
         /* 16:9 모드 조정 */
         .anime-camera {
@@ -135,14 +128,14 @@
         <video id="camera" autoplay playsinline></video>
         <img id="overlay" src="" alt="Overlay Image">
         <div class="controls">
-            <!-- 이미지 업로드 버튼 (파일 선택 숨김) -->
-            <div class="btn" id="uploadBtn">
-                📷
-            </div>
+            <!-- 이미지 업로드 버튼 -->
+            <div class="btn" id="uploadBtn">📷</div>
+            <!-- 오버레이 맞춤 토글 버튼 -->
+            <div class="btn" id="fitToggle">세로</div>  
             <!-- 촬영 버튼 -->
             <div id="capture" class="btn"></div>
             <!-- 화면비 변경 버튼 -->
-            <div id="aspectToggle" class="btn">16:9</div>  <!-- 초기 상태를 "16:9"로 설정 -->
+            <div id="aspectToggle" class="btn">16:9</div>
         </div>
     </div>
 
@@ -157,6 +150,7 @@
             const overlay = document.getElementById("overlay");
             const upload = document.getElementById("upload");
             const uploadBtn = document.getElementById("uploadBtn");
+            const fitToggle = document.getElementById("fitToggle");
             const capture = document.getElementById("capture");
             const aspectToggle = document.getElementById("aspectToggle");
             const opacitySlider = document.getElementById("opacitySlider");
@@ -165,6 +159,7 @@
             const ctx = canvas.getContext("2d");
 
             let currentAspect = "3/4"; // 기본값 4:3
+            let fitMode = "contain"; // 기본값: 세로 맞춤
 
             // 1. 카메라 화면 가져오기
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -197,7 +192,20 @@
                 overlay.style.opacity = opacitySlider.value;
             });
 
-            // 5. 화면비 변경 기능 (4:3 ↔ 16:9)
+            // 5. 오버레이 맞춤 방식 토글 (contain ↔ cover)
+            fitToggle.addEventListener("click", () => {
+                if (fitMode === "contain") {
+                    overlay.style.objectFit = "cover";
+                    fitToggle.textContent = "가로";
+                    fitMode = "cover";
+                } else {
+                    overlay.style.objectFit = "contain";
+                    fitToggle.textContent = "세로";
+                    fitMode = "contain";
+                }
+            });
+
+            // 6. 화면비 변경 기능 (4:3 ↔ 16:9)
             aspectToggle.addEventListener("click", (event) => {
                 event.stopPropagation();
                 if (currentAspect === "3/4") {
