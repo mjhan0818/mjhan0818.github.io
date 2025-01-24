@@ -24,7 +24,7 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -55%);
+            transform: translate(-50%, -50%);
             width: 90vw;
             max-width: 400px;
             aspect-ratio: 3 / 4;
@@ -33,14 +33,17 @@
             border-radius: 10px;
             transition: all 0.3s ease;
             z-index: 10;
+            background: black;
         }
+        /* 카메라 스트림 */
         video {
             position: absolute;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            z-index: 5;
         }
-        /* 오버레이 이미지 기본 설정 */
+        /* 오버레이 이미지 */
         img#overlay {
             position: absolute;
             width: 100%;
@@ -51,6 +54,7 @@
             opacity: 0.5;
             pointer-events: none;
             transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
+            z-index: 15;
         }
         /* 투명도 조절 바 */
         .opacity-slider {
@@ -61,7 +65,7 @@
             width: 200px;
             z-index: 30;
         }
-        /* 기본 버튼 스타일 (0.75배 축소) */
+        /* 기본 버튼 스타일 */
         .controls {
             position: fixed;
             bottom: 15px;
@@ -69,7 +73,7 @@
             transform: translateX(-50%);
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
             z-index: 20;
         }
         .btn {
@@ -140,12 +144,21 @@
             let isRotated = false; // 현재 회전 상태 저장
             let fitMode = "width"; // 기본값: 가로 맞춤
 
-            // 파일 업로드 버튼 클릭 시 파일 선택창 열기
+            // 1. 카메라 화면 가져오기
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("카메라 접근 실패:", err);
+                });
+
+            // 2. 파일 업로드 버튼 클릭 시 파일 선택창 열기
             uploadBtn.addEventListener("click", () => {
                 upload.click();
             });
 
-            // 이미지 업로드 및 오버레이 적용
+            // 3. 이미지 업로드 및 오버레이 적용
             upload.addEventListener("change", (event) => {
                 const file = event.target.files[0];
                 if (file) {
@@ -157,12 +170,12 @@
                 }
             });
 
-            // 투명도 조절 기능
+            // 4. 투명도 조절 기능
             opacitySlider.addEventListener("input", () => {
                 overlay.style.opacity = opacitySlider.value;
             });
 
-            // 오버레이 맞춤 방식 토글 (가로 ↔ 세로)
+            // 5. 오버레이 맞춤 방식 토글 (가로 ↔ 세로)
             fitToggle.addEventListener("click", () => {
                 if (fitMode === "width") {
                     overlay.style.width = "auto";
@@ -177,7 +190,7 @@
                 }
             });
 
-            // 오버레이 회전 토글 (0도 ↔ 90도) + 가로/세로 맞춤 전환
+            // 6. 오버레이 회전 토글 (0도 ↔ 90도) + 가로/세로 맞춤 전환
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
                 overlay.style.transform = isRotated 
