@@ -19,7 +19,7 @@
             align-items: center;
             position: fixed;
         }
-        /* 기본 카메라 화면 */
+        /* 기본 카메라 화면 (4:3) */
         .container {
             position: fixed;
             top: 50%;
@@ -34,6 +34,12 @@
             transition: all 0.3s ease;
             z-index: 10;
             background: black;
+        }
+        /* 16:9 모드 (세로 16) */
+        .full-height {
+            height: 100vh !important;
+            width: auto !important;
+            aspect-ratio: unset !important;
         }
         /* 카메라 */
         video {
@@ -137,7 +143,7 @@
 
             let isRotated = false;
             let fitMode = "width";
-            let currentAspect = "3/4";
+            let isFullHeight = false; // 현재 화면비 상태 저장
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(stream => {
@@ -190,21 +196,16 @@
                     [overlay.style.height, overlay.style.width];
             });
 
-            capture.addEventListener("click", () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
-                const link = document.createElement("a");
-                link.href = canvas.toDataURL("image/png");
-                link.download = "성지순례.png";
-                link.click();
-            });
-
             aspectToggle.addEventListener("click", () => {
-                cameraContainer.style.aspectRatio = currentAspect === "3/4" ? "16/9" : "3/4";
-                aspectToggle.textContent = currentAspect === "3/4" ? "4:3" : "16:9";
-                currentAspect = currentAspect === "3/4" ? "16/9" : "3/4";
+                isFullHeight = !isFullHeight;
+                if (isFullHeight) {
+                    cameraContainer.classList.add("full-height");
+                    aspectToggle.textContent = "4:3";
+                } else {
+                    cameraContainer.classList.remove("full-height");
+                    cameraContainer.style.aspectRatio = "3 / 4";
+                    aspectToggle.textContent = "16:9";
+                }
             });
         });
     </script>
