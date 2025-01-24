@@ -124,30 +124,45 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            const video = document.getElementById("camera");
             const overlay = document.getElementById("overlay");
+            const upload = document.getElementById("upload");
+            const uploadBtn = document.getElementById("uploadBtn");
             const fitToggle = document.getElementById("fitToggle");
             const rotateToggle = document.getElementById("rotateToggle");
+            const capture = document.getElementById("capture");
+            const aspectToggle = document.getElementById("aspectToggle");
+            const opacitySlider = document.getElementById("opacitySlider");
+            const cameraContainer = document.getElementById("cameraContainer");
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
 
-            let isRotated = false; // 이미지 회전 상태 저장
+            let isRotated = false; // 이미지 회전 상태
             let fitMode = "width"; // 기본값: 가로 채움
+            let isWideMode = false; // 16:9 모드 상태
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("카메라 접근 실패:", err);
+                });
+
+            uploadBtn.addEventListener("click", () => upload.click());
+            upload.addEventListener("change", (event) => {
+                const reader = new FileReader();
+                reader.onload = (e) => overlay.src = e.target.result;
+                reader.readAsDataURL(event.target.files[0]);
+            });
 
             function updateOverlaySize() {
                 if (isRotated) {
-                    if (fitMode === "width") {
-                        overlay.style.width = "auto";
-                        overlay.style.height = "100%";
-                    } else {
-                        overlay.style.width = "100%";
-                        overlay.style.height = "auto";
-                    }
+                    overlay.style.width = fitMode === "width" ? "auto" : "100%";
+                    overlay.style.height = fitMode === "width" ? "100%" : "auto";
                 } else {
-                    if (fitMode === "width") {
-                        overlay.style.width = "100%";
-                        overlay.style.height = "auto";
-                    } else {
-                        overlay.style.width = "auto";
-                        overlay.style.height = "100%";
-                    }
+                    overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                    overlay.style.height = fitMode === "width" ? "auto" : "100%";
                 }
             }
 
@@ -163,6 +178,18 @@
                     ? "translate(-50%, -50%) rotate(90deg)" 
                     : "translate(-50%, -50%) rotate(0deg)";
                 updateOverlaySize();
+            });
+
+            aspectToggle.addEventListener("click", () => {
+                isWideMode = !isWideMode;
+                if (isWideMode) {
+                    cameraContainer.classList.add("wide-mode");
+                    aspectToggle.textContent = "4:3";
+                } else {
+                    cameraContainer.classList.remove("wide-mode");
+                    cameraContainer.style.aspectRatio = "3 / 4";
+                    aspectToggle.textContent = "16:9";
+                }
             });
 
             updateOverlaySize(); // 초기 설정
