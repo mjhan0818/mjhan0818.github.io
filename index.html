@@ -19,7 +19,7 @@
             align-items: center;
             position: fixed;
         }
-        /* 기본 카메라 화면 (4:3) */
+        /* 기본 카메라 화면 */
         .container {
             position: fixed;
             top: 50%;
@@ -35,7 +35,7 @@
             z-index: 10;
             background: black;
         }
-        /* 카메라 스트림 */
+        /* 카메라 */
         video {
             position: absolute;
             width: 100%;
@@ -65,7 +65,7 @@
             width: 200px;
             z-index: 30;
         }
-        /* 기본 버튼 스타일 */
+        /* 버튼 스타일 */
         .controls {
             position: fixed;
             bottom: 15px;
@@ -108,22 +108,16 @@
         <video id="camera" autoplay playsinline></video>
         <img id="overlay" src="" alt="Overlay Image">
         <div class="controls">
-            <!-- 이미지 업로드 버튼 -->
             <div class="btn" id="uploadBtn">📷</div>
-            <!-- 오버레이 맞춤 토글 버튼 -->
             <div class="btn" id="fitToggle">가로</div>  
-            <!-- 촬영 버튼 -->
-            <div id="capture" class="btn"></div>
-            <!-- 화면비 변경 버튼 -->
+            <div id="capture" class="btn">📸</div>
             <div id="aspectToggle" class="btn">16:9</div>
-            <!-- 오버레이 회전 버튼 -->
             <div class="btn" id="rotateToggle">↻</div>  
         </div>
     </div>
 
     <canvas id="canvas" style="display: none;"></canvas>
 
-    <!-- 파일 업로드 input (숨김) -->
     <input type="file" id="upload" accept="image/*" class="hidden-input">
 
     <script>
@@ -141,10 +135,10 @@
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
-            let isRotated = false; // 현재 회전 상태 저장
-            let fitMode = "width"; // 기본값: 가로 맞춤
+            let isRotated = false;
+            let fitMode = "width";
+            let currentAspect = "3/4";
 
-            // 1. 카메라 화면 가져오기
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(stream => {
                     video.srcObject = stream;
@@ -153,12 +147,10 @@
                     console.error("카메라 접근 실패:", err);
                 });
 
-            // 2. 파일 업로드 버튼 클릭 시 파일 선택창 열기
             uploadBtn.addEventListener("click", () => {
                 upload.click();
             });
 
-            // 3. 이미지 업로드 및 오버레이 적용
             upload.addEventListener("change", (event) => {
                 const file = event.target.files[0];
                 if (file) {
@@ -170,12 +162,10 @@
                 }
             });
 
-            // 4. 투명도 조절 기능
             opacitySlider.addEventListener("input", () => {
                 overlay.style.opacity = opacitySlider.value;
             });
 
-            // 5. 오버레이 맞춤 방식 토글 (가로 ↔ 세로)
             fitToggle.addEventListener("click", () => {
                 if (fitMode === "width") {
                     overlay.style.width = "auto";
@@ -190,21 +180,31 @@
                 }
             });
 
-            // 6. 오버레이 회전 토글 (0도 ↔ 90도) + 가로/세로 맞춤 전환
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
                 overlay.style.transform = isRotated 
                     ? "translate(-50%, -50%) rotate(90deg)" 
                     : "translate(-50%, -50%) rotate(0deg)";
 
-                // 회전된 상태에서는 width와 height를 반대로 설정
-                if (isRotated) {
-                    overlay.style.width = (fitMode === "width") ? "auto" : "100%";
-                    overlay.style.height = (fitMode === "width") ? "100%" : "auto";
-                } else {
-                    overlay.style.width = (fitMode === "width") ? "100%" : "auto";
-                    overlay.style.height = (fitMode === "width") ? "auto" : "100%";
-                }
+                [overlay.style.width, overlay.style.height] = 
+                    [overlay.style.height, overlay.style.width];
+            });
+
+            capture.addEventListener("click", () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+                const link = document.createElement("a");
+                link.href = canvas.toDataURL("image/png");
+                link.download = "성지순례.png";
+                link.click();
+            });
+
+            aspectToggle.addEventListener("click", () => {
+                cameraContainer.style.aspectRatio = currentAspect === "3/4" ? "16/9" : "3/4";
+                aspectToggle.textContent = currentAspect === "3/4" ? "4:3" : "16:9";
+                currentAspect = currentAspect === "3/4" ? "16/9" : "3/4";
             });
         });
     </script>
