@@ -19,7 +19,7 @@
             align-items: center;
             position: fixed;
         }
-        /* 카메라 컨테이너 */
+        /* 기본 카메라 화면 (4:3) */
         .container {
             position: fixed;
             top: 50%;
@@ -35,11 +35,9 @@
             z-index: 10;
             background: black;
         }
-        /* 16:9 모드 - 세로 16 기준 */
-        .tall-mode {
-            height: 100vh !important;
-            width: auto !important;
-            aspect-ratio: unset !important;
+        /* 16:9 모드 - 세로 16, 가로 9 */
+        .wide-mode {
+            aspect-ratio: 9 / 16 !important;
         }
         /* 카메라 */
         video {
@@ -101,28 +99,6 @@
         .btn:active {
             background: rgba(255, 255, 255, 0.7);
         }
-        /* 미리보기 팝업 */
-        .preview-container {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
-            z-index: 50;
-            text-align: center;
-        }
-        .preview-container img {
-            max-width: 100%;
-            border-radius: 5px;
-        }
-        .preview-buttons {
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
     </style>
 </head>
 <body>
@@ -144,15 +120,6 @@
         </div>
     </div>
 
-    <!-- 촬영 미리보기 팝업 -->
-    <div class="preview-container" id="previewContainer">
-        <img id="previewImage" alt="촬영 미리보기">
-        <div class="preview-buttons">
-            <button id="downloadBtn">다운로드</button>
-            <button id="closePreview">닫기</button>
-        </div>
-    </div>
-
     <canvas id="canvas" style="display: none;"></canvas>
 
     <input type="file" id="upload" accept="image/*" class="hidden-input">
@@ -168,16 +135,20 @@
             const capture = document.getElementById("capture");
             const aspectToggle = document.getElementById("aspectToggle");
             const opacitySlider = document.getElementById("opacitySlider");
-            const previewContainer = document.getElementById("previewContainer");
-            const previewImage = document.getElementById("previewImage");
-            const downloadBtn = document.getElementById("downloadBtn");
-            const closePreview = document.getElementById("closePreview");
             const cameraContainer = document.getElementById("cameraContainer");
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
             let isRotated = false;
-            let isTallMode = false;
+            let isWideMode = false; // 16:9 모드 상태
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("카메라 접근 실패:", err);
+                });
 
             uploadBtn.addEventListener("click", () => upload.click());
             upload.addEventListener("change", (event) => {
@@ -188,13 +159,19 @@
 
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
-                overlay.style.transform = isRotated ? "rotate(90deg)" : "rotate(0deg)";
+                overlay.style.transform = isRotated ? "translate(-50%, -50%) rotate(90deg)" : "translate(-50%, -50%) rotate(0deg)";
             });
 
             aspectToggle.addEventListener("click", () => {
-                isTallMode = !isTallMode;
-                cameraContainer.classList.toggle("tall-mode", isTallMode);
-                aspectToggle.textContent = isTallMode ? "4:3" : "16:9";
+                isWideMode = !isWideMode;
+                if (isWideMode) {
+                    cameraContainer.classList.add("wide-mode");
+                    aspectToggle.textContent = "4:3";
+                } else {
+                    cameraContainer.classList.remove("wide-mode");
+                    cameraContainer.style.aspectRatio = "3 / 4";
+                    aspectToggle.textContent = "16:9";
+                }
             });
         });
     </script>
