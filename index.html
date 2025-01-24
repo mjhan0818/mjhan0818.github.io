@@ -50,8 +50,6 @@
         /* 오버레이 이미지 */
         img#overlay {
             position: absolute;
-            width: 100%;
-            height: auto;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(0deg);
@@ -129,7 +127,6 @@
             const overlay = document.getElementById("overlay");
             const fitToggle = document.getElementById("fitToggle");
             const rotateToggle = document.getElementById("rotateToggle");
-            const cameraContainer = document.getElementById("cameraContainer");
 
             let isRotated = false; // 이미지 회전 상태 저장
             let fitMode = "width"; // 기본값: 가로 채움
