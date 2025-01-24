@@ -116,48 +116,35 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const video = document.getElementById("camera");
             const overlay = document.getElementById("overlay");
-            const upload = document.getElementById("upload");
-            const uploadBtn = document.getElementById("uploadBtn");
             const fitToggle = document.getElementById("fitToggle");
             const rotateToggle = document.getElementById("rotateToggle");
-            const capture = document.getElementById("capture");
-            const aspectToggle = document.getElementById("aspectToggle");
-            const opacitySlider = document.getElementById("opacitySlider");
-            const cameraContainer = document.getElementById("cameraContainer");
-            const canvas = document.getElementById("canvas");
-            const ctx = canvas.getContext("2d");
 
-            let isRotated = false; 
-            let fitMode = "width"; 
-            let isWideMode = false; 
-
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("카메라 접근 실패:", err);
-                });
-
-            uploadBtn.addEventListener("click", () => upload.click());
-            upload.addEventListener("change", (event) => {
-                const reader = new FileReader();
-                reader.onload = (e) => overlay.src = e.target.result;
-                reader.readAsDataURL(event.target.files[0]);
-            });
+            let isRotated = false;
+            let fitMode = "width"; // 기본값: 가로 맞춤
 
             function updateOverlaySize() {
                 if (isRotated) {
-                    let imgWidth = overlay.naturalWidth;
-                    let imgHeight = overlay.naturalHeight;
+                    // ✅ 90도 회전 후에는 원본 이미지 크기를 새로 측정해서 적용
+                    const imgWidth = overlay.naturalWidth;
+                    const imgHeight = overlay.naturalHeight;
 
-                    overlay.style.width = fitMode === "width" ? `${imgHeight}px` : "100%";
-                    overlay.style.height = fitMode === "width" ? "100%" : `${imgWidth}px`;
+                    if (fitMode === "width") {
+                        overlay.style.width = "auto";
+                        overlay.style.height = "100%";
+                    } else {
+                        overlay.style.width = "100%";
+                        overlay.style.height = "auto";
+                    }
                 } else {
-                    overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                    overlay.style.height = fitMode === "width" ? "auto" : "100%";
+                    // ✅ 회전 전에는 기존 가로/세로 맞춤 유지
+                    if (fitMode === "width") {
+                        overlay.style.width = "100%";
+                        overlay.style.height = "auto";
+                    } else {
+                        overlay.style.width = "auto";
+                        overlay.style.height = "100%";
+                    }
                 }
             }
 
@@ -172,30 +159,8 @@
                 overlay.style.transform = isRotated 
                     ? "translate(-50%, -50%) rotate(90deg)" 
                     : "translate(-50%, -50%) rotate(0deg)";
+
                 updateOverlaySize();
-            });
-
-            aspectToggle.addEventListener("click", () => {
-                isWideMode = !isWideMode;
-                cameraContainer.classList.toggle("wide-mode", isWideMode);
-                aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
-            });
-
-            capture.addEventListener("click", () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                if (overlay.src) {
-                    ctx.globalAlpha = overlay.style.opacity;
-                    ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
-                    ctx.globalAlpha = 1;
-                }
-
-                const link = document.createElement("a");
-                link.href = canvas.toDataURL("image/png");
-                link.download = "성지순례.png";
-                link.click();
             });
 
             updateOverlaySize();
