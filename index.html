@@ -15,6 +15,7 @@
             color: white;
             margin: 0;
             overflow: hidden;
+            position: relative;
         }
         .container {
             position: relative;
@@ -25,6 +26,7 @@
             border: 2px solid white;
             border-radius: 10px;
             transition: aspect-ratio 0.3s ease;
+            z-index: 10; /* 카메라 화면을 버튼보다 위로 배치 */
         }
         video, img {
             position: absolute;
@@ -37,13 +39,14 @@
             pointer-events: none;
         }
         .controls {
-            position: absolute;
+            position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             align-items: center;
             gap: 20px;
+            z-index: 5; /* 버튼들이 카메라보다 아래에 위치 */
         }
         .btn {
             width: 60px;
@@ -57,7 +60,6 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            position: relative;
             text-align: center;
         }
         .btn:active {
