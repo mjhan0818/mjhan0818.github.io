@@ -19,7 +19,7 @@
             align-items: center;
             position: fixed;
         }
-        /* 기본 카메라 화면 */
+        /* 기본 카메라 화면 (4:3) */
         .container {
             position: fixed;
             top: 50%;
@@ -35,12 +35,11 @@
             z-index: 10;
             background: black;
         }
-        /* 16:9 모드 - 가로 기준 크기 조정 */
-        .wide-mode {
-            width: 90vw !important;
-            max-width: 600px !important;
-            height: auto !important;
-            aspect-ratio: 16 / 9 !important;
+        /* 16:9 모드 - 세로 16 기준 */
+        .tall-mode {
+            height: 100vh !important;
+            width: auto !important;
+            aspect-ratio: unset !important;
         }
         /* 카메라 */
         video {
@@ -144,7 +143,7 @@
 
             let isRotated = false;
             let fitMode = "width";
-            let isWideMode = false; // 16:9 모드 상태
+            let isTallMode = false; // 16:9 모드 상태
 
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                 .then(stream => {
@@ -173,20 +172,6 @@
                 overlay.style.opacity = opacitySlider.value;
             });
 
-            fitToggle.addEventListener("click", () => {
-                if (fitMode === "width") {
-                    overlay.style.width = "auto";
-                    overlay.style.height = "100%";
-                    fitToggle.textContent = "세로";
-                    fitMode = "height";
-                } else {
-                    overlay.style.width = "100%";
-                    overlay.style.height = "auto";
-                    fitToggle.textContent = "가로";
-                    fitMode = "width";
-                }
-            });
-
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
                 overlay.style.transform = isRotated 
@@ -195,12 +180,12 @@
             });
 
             aspectToggle.addEventListener("click", () => {
-                isWideMode = !isWideMode;
-                if (isWideMode) {
-                    cameraContainer.classList.add("wide-mode");
+                isTallMode = !isTallMode;
+                if (isTallMode) {
+                    cameraContainer.classList.add("tall-mode");
                     aspectToggle.textContent = "4:3";
                 } else {
-                    cameraContainer.classList.remove("wide-mode");
+                    cameraContainer.classList.remove("tall-mode");
                     cameraContainer.style.aspectRatio = "3 / 4";
                     aspectToggle.textContent = "16:9";
                 }
