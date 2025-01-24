@@ -160,8 +160,14 @@
 
             function updateOverlaySize() {
                 if (!overlay.src) return;
-                overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                overlay.style.height = fitMode === "width" ? "auto" : "100%";
+                
+                if (isRotated) {
+                    overlay.style.width = fitMode === "width" ? `${b}px` : "auto";
+                    overlay.style.height = fitMode === "width" ? "auto" : `${a}px`;
+                } else {
+                    overlay.style.width = fitMode === "width" ? `${a}px` : "auto";
+                    overlay.style.height = fitMode === "width" ? "auto" : `${b}px`;
+                }
             }
 
             fitToggle.addEventListener("click", () => {
