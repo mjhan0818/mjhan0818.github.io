@@ -43,28 +43,37 @@
             transform: translateX(-50%);
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
-        .capture-btn {
+        .btn {
             width: 60px;
             height: 60px;
             background: white;
             border-radius: 50%;
             border: 4px solid rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
+            position: relative;
         }
-        .capture-btn:active {
+        .btn:active {
             background: rgba(255, 255, 255, 0.7);
+        }
+        .hidden-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
         }
         .top-controls {
             position: absolute;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
         }
-        select, input {
+        select {
             background: rgba(0, 0, 0, 0.5);
             color: white;
             border: none;
@@ -87,12 +96,17 @@
             <option value="16/9">16:9 (와이드)</option>
             <option value="1/1">1:1 (정사각형)</option>
         </select>
-        <input type="file" id="upload" accept="image/*">
-        <input type="range" id="opacity" min="0" max="1" step="0.1" value="0.5">
     </div>
 
     <div class="controls">
-        <button id="capture" class="capture-btn"></button>
+        <!-- 이미지 업로드 버튼 -->
+        <div class="btn">
+            📷
+            <input type="file" id="upload" accept="image/*" class="hidden-input">
+        </div>
+
+        <!-- 촬영 버튼 -->
+        <div id="capture" class="btn"></div>
     </div>
 
     <canvas id="canvas" style="display: none;"></canvas>
@@ -102,7 +116,6 @@
             const video = document.getElementById("camera");
             const overlay = document.getElementById("overlay");
             const upload = document.getElementById("upload");
-            const opacity = document.getElementById("opacity");
             const capture = document.getElementById("capture");
             const aspectRatioSelect = document.getElementById("aspectRatio");
             const cameraContainer = document.getElementById("cameraContainer");
@@ -130,12 +143,7 @@
                 }
             });
 
-            // 3. 오버레이 투명도 조절
-            opacity.addEventListener("input", (event) => {
-                overlay.style.opacity = event.target.value;
-            });
-
-            // 4. 사진 찍기 기능
+            // 3. 사진 찍기 기능
             capture.addEventListener("click", () => {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
@@ -157,7 +165,7 @@
                 link.click();
             });
 
-            // 5. 화면비 변경 기능
+            // 4. 화면비 변경 기능
             aspectRatioSelect.addEventListener("change", (event) => {
                 cameraContainer.style.aspectRatio = event.target.value;
             });
