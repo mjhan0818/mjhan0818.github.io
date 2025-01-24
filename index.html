@@ -149,8 +149,15 @@
             });
 
             function updateOverlaySize() {
-                overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                overlay.style.height = fitMode === "width" ? "auto" : "100%";
+                if (!overlay.src) return;
+
+                if (isRotated) {
+                    overlay.style.width = fitMode === "width" ? "auto" : "100%";
+                    overlay.style.height = fitMode === "width" ? "100%" : "auto";
+                } else {
+                    overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                    overlay.style.height = fitMode === "width" ? "auto" : "100%";
+                }
             }
 
             fitToggle.addEventListener("click", () => {
@@ -162,25 +169,9 @@
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
                 overlay.style.transform = isRotated 
-                    ? "translate(-50%, -50%) rotate(90deg)" 
-                    : "translate(-50%, -50%) rotate(0deg)";
+                    ? "translate(-50%, -50%) rotate(90deg) scale(1.0)" 
+                    : "translate(-50%, -50%) rotate(0deg) scale(1.0)";
                 updateOverlaySize();
-            });
-
-            aspectToggle.addEventListener("click", () => {
-                isWideMode = !isWideMode;
-                cameraContainer.classList.toggle("wide-mode", isWideMode);
-                aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
-            });
-
-            capture.addEventListener("click", () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const link = document.createElement("a");
-                link.href = canvas.toDataURL("image/png");
-                link.download = "capture.png";
-                link.click();
             });
 
             updateOverlaySize();
