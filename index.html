@@ -96,7 +96,7 @@
 
     <h1>성지순례 카메라</h1>
 
-    <!-- ✅ 오버레이 투명도 조절 슬라이더 -->
+    <!-- ✅ 오버레이 투명도 조절 슬라이더 추가 -->
     <input type="range" id="opacitySlider" class="opacity-slider" min="0" max="1" step="0.05" value="0.5">
 
     <div class="container" id="cameraContainer">
@@ -158,8 +158,15 @@
             }
 
             function updateOverlaySize() {
-                overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                overlay.style.height = fitMode === "width" ? "auto" : "100%";
+                if (!overlay.src) return;
+
+                if (isRotated) {
+                    overlay.style.width = fitMode === "width" ? "auto" : "100%";
+                    overlay.style.height = fitMode === "width" ? "100%" : "auto";
+                } else {
+                    overlay.style.width = fitMode === "width" ? "100%" : "auto";
+                    overlay.style.height = fitMode === "width" ? "auto" : "100%";
+                }
             }
 
             fitToggle.addEventListener("click", () => {
@@ -173,6 +180,8 @@
                 overlay.style.transform = isRotated 
                     ? "translate(-50%, -50%) rotate(90deg)" 
                     : "translate(-50%, -50%) rotate(0deg)";
+                
+                updateOverlaySize();
             });
 
             aspectToggle.addEventListener("click", () => {
