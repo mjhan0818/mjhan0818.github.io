@@ -53,20 +53,16 @@
             transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
             z-index: 15;
         }
-.opacity-slider {
-    position: absolute;  /* 🔥 카메라 내부에 배치 */
-    top: 5px;  /* 🔥 프레임 상단에 위치 */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;  /* 🔥 슬라이더 길이 적절히 조정 */
-    background: rgba(255, 255, 255, 0.2); /* 🔥 가독성 향상 */
-    z-index: 30;
-}
-
-	    //슬라이더 위치 조정
-	    
+        .opacity-slider {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            z-index: 30;
+        }
         .controls {
-            position: absolute;
+            position: fixed;
             bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
@@ -98,28 +94,21 @@
 </head>
 <body>
 
+    <h1>성지순례 카메라</h1>
 
     <input type="range" id="opacitySlider" class="opacity-slider" min="0" max="1" step="0.05" value="0.5">
 
-<div class="container" id="cameraContainer">
-    <!-- ✅ 슬라이더는 카메라 프레임 내부 상단 -->
-    <input type="range" id="opacitySlider" class="opacity-slider" min="0" max="1" step="0.05" value="0.5">
-    
-    <video id="camera" autoplay playsinline></video>
-    <img id="overlay" src="" alt="Overlay Image">
-    
-    <!-- ✅ 버튼들은 기존 하단에 유지 -->
-    <div class="controls">
-        <div class="btn" id="uploadBtn">📷</div>
-        <div class="btn" id="fitToggle">가로</div>  
-        <div id="capture" class="btn">📸</div>
-        <div id="aspectToggle" class="btn">16:9</div>
-        <div class="btn" id="rotateToggle">↻</div>  
+    <div class="container" id="cameraContainer">
+        <video id="camera" autoplay playsinline></video>
+        <img id="overlay" src="" alt="Overlay Image">
+        <div class="controls">
+            <div class="btn" id="uploadBtn">📷</div>
+            <div class="btn" id="fitToggle">가로</div>  
+            <div id="capture" class="btn">📸</div>
+            <div id="aspectToggle" class="btn">16:9</div>
+            <div class="btn" id="rotateToggle">↻</div>  
+        </div>
     </div>
-</div>
-
-
-	//슬라이더 위치이동
 
     <canvas id="canvas" style="display: none;"></canvas>
 
@@ -145,50 +134,6 @@ opacitySlider.addEventListener("input", () => {
 }, { passive: true });
 
 // 슬라이더 반응속도 조정
-
-	    upload.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return; // 파일이 없으면 종료
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-
-            // 📌 최대 크기 설정 (1000px)
-            const maxSize = 1000;
-            let width = img.width;
-            let height = img.height;
-
-            // 🔥 비율 유지하면서 크기 축소
-            if (width > maxSize || height > maxSize) {
-                const scaleFactor = Math.min(maxSize / width, maxSize / height);
-                width *= scaleFactor;
-                height *= scaleFactor;
-            }
-
-            // 캔버스 크기 설정
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
-
-            // 📌 WebP 변환 & 품질 60% 설정 (가볍고 빠름!)
-            overlay.src = canvas.toDataURL("image/webp", 0.6); 
-
-            updateOverlaySize(); // 오버레이 크기 업데이트
-        };
-
-        img.src = e.target.result;
-    };
-
-    reader.readAsDataURL(file);
-});
-
-	    //업로드한 이미지 자동 다운그레이드
-
-	    
 	
         document.addEventListener("DOMContentLoaded", () => {
             const video = document.getElementById("camera");
