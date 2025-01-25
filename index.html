@@ -121,7 +121,7 @@
 		});
 		//누락된 이벤트 리스너 추가했음
 
-	    let updatePending = false;
+let updatePending = false;
 
 opacitySlider.addEventListener("input", () => {
     if (!updatePending) {
@@ -131,7 +131,8 @@ opacitySlider.addEventListener("input", () => {
             updatePending = false;
         });
     }
-});
+}, { passive: true });
+
 // 슬라이더 반응속도 조정
 	
         document.addEventListener("DOMContentLoaded", () => {
