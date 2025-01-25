@@ -207,19 +207,37 @@
                 aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
             });
 
-            capture.addEventListener("click", () => {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
+capture.addEventListener("click", () => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // 비디오 화면 크기에 맞게 캔버스 설정
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                const link = document.createElement("a");
-                link.href = canvas.toDataURL("image/png");
-                link.download = "captured_image.png";
-                link.click();
-            });
+    // 이미지 데이터 URL 생성
+    const imageData = canvas.toDataURL("image/png");
+
+    // iOS 기기인지 확인
+    function isIOS() {
+        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    if (isIOS() && window.webkit && window.webkit.messageHandlers) {
+        // iOS 갤러리 저장 (WebKit 인터페이스가 존재하는 경우)
+        window.webkit.messageHandlers.saveImage.postMessage(imageData);
+    } else {
+        // 일반적인 다운로드 방식 (iOS가 아닐 경우)
+        const link = document.createElement("a");
+        link.href = imageData;
+        link.download = "captured_image.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+});
+
 
             updateOverlaySize();
         });
