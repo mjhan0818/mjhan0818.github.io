@@ -134,6 +134,50 @@ opacitySlider.addEventListener("input", () => {
 }, { passive: true });
 
 // 슬라이더 반응속도 조정
+
+	    upload.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return; // 파일이 없으면 종료
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            // 📌 최대 크기 설정 (1000px)
+            const maxSize = 1000;
+            let width = img.width;
+            let height = img.height;
+
+            // 🔥 비율 유지하면서 크기 축소
+            if (width > maxSize || height > maxSize) {
+                const scaleFactor = Math.min(maxSize / width, maxSize / height);
+                width *= scaleFactor;
+                height *= scaleFactor;
+            }
+
+            // 캔버스 크기 설정
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // 📌 WebP 변환 & 품질 60% 설정 (가볍고 빠름!)
+            overlay.src = canvas.toDataURL("image/webp", 0.6); 
+
+            updateOverlaySize(); // 오버레이 크기 업데이트
+        };
+
+        img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+});
+
+	    //업로드한 이미지 자동 다운그레이드
+
+	    
 	
         document.addEventListener("DOMContentLoaded", () => {
             const video = document.getElementById("camera");
