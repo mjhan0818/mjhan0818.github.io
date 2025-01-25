@@ -169,27 +169,49 @@
                 return /iPhone|iPad|iPod/i.test(navigator.userAgent);
             }
 
-            capture.addEventListener("click", () => {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
+capture.addEventListener("click", async () => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // 캔버스 크기를 비디오 화면 크기에 맞춤
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                const imageData = canvas.toDataURL("image/png");
+    // 이미지 데이터 URL 생성
+    const imageData = canvas.toDataURL("image/png");
 
-                if (isIOS() && window.webkit && window.webkit.messageHandlers) {
-                    window.webkit.messageHandlers.saveImage.postMessage(imageData);
-                } else {
-                    const link = document.createElement("a");
-                    link.href = imageData;
-                    link.download = "captured_image.png";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
+    // Blob으로 변환
+    const response = await fetch(imageData);
+    const blob = await response.blob();
+    const file = new File([blob], "captured_image.png", { type: "image/png" });
+
+    // iOS 기기인지 확인
+    function isIOS() {
+        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    if (isIOS() && navigator.share) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: "사진 저장",
+                text: "캡처한 사진을 저장하세요.",
             });
+        } catch (error) {
+            console.error("공유 실패:", error);
+        }
+    } else {
+        // 일반 브라우저에서는 기존 다운로드 방식 유지
+        const link = document.createElement("a");
+        link.href = imageData;
+        link.download = "captured_image.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+});
+
 
             function updateOverlayImage() {
                 const canvas = document.createElement("canvas");
