@@ -53,14 +53,18 @@
             transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
             z-index: 15;
         }
-        .opacity-slider {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            z-index: 30;
-        }
+     .opacity-slider {
+    position: absolute;  /* 🔥 fixed → absolute (카메라 내부 배치) */
+    top: 5px;  /* 🔥 카메라 프레임 내부 최상단 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;  /* 🔥 슬라이더 길이 조정 */
+    background: rgba(255, 255, 255, 0.2); /* 🔥 배경 살짝 추가 (가독성 향상) */
+    z-index: 30;
+}
+
+	    //슬라이더 위치 조정
+	    
         .controls {
             position: fixed;
             bottom: 15px;
@@ -94,21 +98,23 @@
 </head>
 <body>
 
-    <h1>성지순례 카메라</h1>
 
     <input type="range" id="opacitySlider" class="opacity-slider" min="0" max="1" step="0.05" value="0.5">
 
-    <div class="container" id="cameraContainer">
-        <video id="camera" autoplay playsinline></video>
-        <img id="overlay" src="" alt="Overlay Image">
-        <div class="controls">
-            <div class="btn" id="uploadBtn">📷</div>
-            <div class="btn" id="fitToggle">가로</div>  
-            <div id="capture" class="btn">📸</div>
-            <div id="aspectToggle" class="btn">16:9</div>
-            <div class="btn" id="rotateToggle">↻</div>  
-        </div>
+<div class="container" id="cameraContainer">
+    <input type="range" id="opacitySlider" class="opacity-slider" min="0" max="1" step="0.05" value="0.5">
+    <video id="camera" autoplay playsinline></video>
+    <img id="overlay" src="" alt="Overlay Image">
+    <div class="controls">
+        <div class="btn" id="uploadBtn">📷</div>
+        <div class="btn" id="fitToggle">가로</div>  
+        <div id="capture" class="btn">📸</div>
+        <div id="aspectToggle" class="btn">16:9</div>
+        <div class="btn" id="rotateToggle">↻</div>  
     </div>
+</div>
+
+	//슬라이더 위치이동
 
     <canvas id="canvas" style="display: none;"></canvas>
 
