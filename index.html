@@ -53,20 +53,20 @@
             transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
             z-index: 15;
         }
-     .opacity-slider {
-    position: absolute;  /* 🔥 fixed → absolute (카메라 내부 배치) */
-    top: 5px;  /* 🔥 카메라 프레임 내부 최상단 */
+.opacity-slider {
+    position: absolute;  /* 🔥 카메라 내부에 배치 */
+    top: 5px;  /* 🔥 프레임 상단에 위치 */
     left: 50%;
     transform: translateX(-50%);
-    width: 80%;  /* 🔥 슬라이더 길이 조정 */
-    background: rgba(255, 255, 255, 0.2); /* 🔥 배경 살짝 추가 (가독성 향상) */
+    width: 80%;  /* 🔥 슬라이더 길이 적절히 조정 */
+    background: rgba(255, 255, 255, 0.2); /* 🔥 가독성 향상 */
     z-index: 30;
 }
 
 	    //슬라이더 위치 조정
 	    
         .controls {
-            position: fixed;
+            position: absolute;
             bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
@@ -102,9 +102,13 @@
     <input type="range" id="opacitySlider" class="opacity-slider" min="0" max="1" step="0.05" value="0.5">
 
 <div class="container" id="cameraContainer">
+    <!-- ✅ 슬라이더는 카메라 프레임 내부 상단 -->
     <input type="range" id="opacitySlider" class="opacity-slider" min="0" max="1" step="0.05" value="0.5">
+    
     <video id="camera" autoplay playsinline></video>
     <img id="overlay" src="" alt="Overlay Image">
+    
+    <!-- ✅ 버튼들은 기존 하단에 유지 -->
     <div class="controls">
         <div class="btn" id="uploadBtn">📷</div>
         <div class="btn" id="fitToggle">가로</div>  
@@ -113,6 +117,7 @@
         <div class="btn" id="rotateToggle">↻</div>  
     </div>
 </div>
+
 
 	//슬라이더 위치이동
 
