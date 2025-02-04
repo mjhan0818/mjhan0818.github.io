@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let originalImage = null;
     let mediaRecorder;
     let recordedChunks = [];
-    let recordingTimeout;
+    let isRecording = false;
 
     // iOS 감지 함수
     const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -217,30 +217,18 @@ document.addEventListener("DOMContentLoaded", () => {
         aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
     });
 
-    // 캡처 버튼 이벤트 (짧게 누르면 사진, 길게 누르면 영상)
-    captureBtn.addEventListener("mousedown", () => {
-        recordingTimeout = setTimeout(startRecording, 500);  // 0.5초 이상 누르면 녹화 시작
-    });
-
-    captureBtn.addEventListener("mouseup", () => {
-        clearTimeout(recordingTimeout);
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-            stopRecording();
-        } else {
-            captureImage();  // 0.5초 미만 누르면 사진 촬영
+    // 캡처 버튼 이벤트
+    captureBtn.addEventListener("click", () => {
+        if (!isRecording) {
+            captureImage();  // 녹화 중이 아닐 때는 사진 촬영
         }
     });
 
-    captureBtn.addEventListener("touchstart", () => {
-        recordingTimeout = setTimeout(startRecording, 500);
-    });
-
-    captureBtn.addEventListener("touchend", () => {
-        clearTimeout(recordingTimeout);
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-            stopRecording();
+    captureBtn.addEventListener("dblclick", () => {
+        if (!isRecording) {
+            startRecording();  // 녹화 시작
         } else {
-            captureImage();
+            stopRecording();   // 녹화 종료
         }
     });
 
@@ -285,7 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const mp4Options = { mimeType: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"' };
         const webmOptions = { mimeType: 'video/webm; codecs=vp9' };
-
         const options = MediaRecorder.isTypeSupported(mp4Options.mimeType) ? mp4Options : webmOptions;
 
         mediaRecorder = new MediaRecorder(video.srcObject, options);
@@ -299,6 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         mediaRecorder.onstop = () => saveRecording(options.mimeType);
         mediaRecorder.start();
+        isRecording = true;
 
         // 녹화 중 피드백
         captureBtn.style.backgroundColor = "red";
@@ -310,6 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (mediaRecorder && mediaRecorder.state === "recording") {
             mediaRecorder.stop();
         }
+        isRecording = false;
 
         // 피드백 원상복구
         captureBtn.style.backgroundColor = "white";
