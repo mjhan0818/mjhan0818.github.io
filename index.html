@@ -115,220 +115,232 @@
     <input type="file" id="upload" accept="image/*" style="display:none;">
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const cameraContainer = document.getElementById("cameraContainer");
-            const video = document.getElementById("camera");
-            const overlay = document.getElementById("overlay");
-            const upload = document.getElementById("upload");
-            const uploadBtn = document.getElementById("uploadBtn");
-            const fitToggle = document.getElementById("fitToggle");
-            const rotateToggle = document.getElementById("rotateToggle");
-            const captureBtn = document.getElementById("capture");
-            const aspectToggle = document.getElementById("aspectToggle");
-            const opacitySlider = document.getElementById("opacitySlider");
+document.addEventListener("DOMContentLoaded", () => {
+    const cameraContainer = document.getElementById("cameraContainer");
+    const video = document.getElementById("camera");
+    const overlay = document.getElementById("overlay");
+    const upload = document.getElementById("upload");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const fitToggle = document.getElementById("fitToggle");
+    const rotateToggle = document.getElementById("rotateToggle");
+    const captureBtn = document.getElementById("capture");
+    const aspectToggle = document.getElementById("aspectToggle");
+    const opacitySlider = document.getElementById("opacitySlider");
 
-            let isRotated = false;
-            let fitMode = "width";
-            let isWideMode = false;
-            let originalImage = null;
-            let mediaRecorder;
-let recordedChunks = [];
+    let isRotated = false;
+    let fitMode = "width";
+    let isWideMode = false;
+    let originalImage = null;
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recordingTimeout;
 
-// 캡처 버튼에 이벤트 추가
-captureBtn.addEventListener("mousedown", startRecording);
-captureBtn.addEventListener("mouseup", stopRecording);
-captureBtn.addEventListener("touchstart", startRecording);  // 모바일 대응
-captureBtn.addEventListener("touchend", stopRecording);
+    // iOS 감지 함수
+    const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-function startRecording() {
-    if (!video.srcObject) {
-        console.error("카메라 스트림이 없습니다.");
-        return;
+    // 카메라 시작
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+            video.srcObject = stream;
+            video.onloadedmetadata = () => video.play();
+        })
+        .catch(err => {
+            console.error("카메라 접근 실패:", err);
+            alert("카메라에 접근할 수 없습니다. 권한을 확인해주세요.");
+        });
+
+    // 투명도 조절
+    opacitySlider.addEventListener("input", () => {
+        overlay.style.opacity = opacitySlider.value;
+    });
+
+    // 이미지 업로드
+    uploadBtn.addEventListener("click", () => upload.click());
+    upload.addEventListener("change", handleImageUpload);
+
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            originalImage = new Image();
+            originalImage.onload = updateOverlayImage;
+            originalImage.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
-    // MP4 형식 시도, 지원 안되면 WebM으로 대체
-    const mp4Options = { mimeType: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"' };
-    const webmOptions = { mimeType: 'video/webm; codecs=vp9' };
+    // 오버레이 이미지 갱신
+    function updateOverlayImage() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-    const options = MediaRecorder.isTypeSupported(mp4Options.mimeType) ? mp4Options : webmOptions;
-
-    if (options.mimeType === mp4Options.mimeType) {
-        console.log("MP4 형식으로 녹화 중...");
-    } else {
-        console.warn("MP4 형식이 지원되지 않아 WebM으로 녹화합니다.");
-    }
-
-    // MediaRecorder 초기화
-    mediaRecorder = new MediaRecorder(video.srcObject, options);
-
-    mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-            recordedChunks.push(event.data);
+        if (isRotated) {
+            canvas.width = originalImage.height;
+            canvas.height = originalImage.width;
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(Math.PI / 2);
+            ctx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
+        } else {
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            ctx.drawImage(originalImage, 0, 0);
         }
-    };
+        overlay.src = canvas.toDataURL();
+        updateOverlaySize();
+    }
 
-    mediaRecorder.onstop = () => saveRecording(options.mimeType);
+    // 오버레이 크기 조절
+    function updateOverlaySize() {
+        overlay.style.width = fitMode === "width" ? "100%" : "auto";
+        overlay.style.height = fitMode === "width" ? "auto" : "100%";
+    }
 
-    recordedChunks = [];
-    mediaRecorder.start();
+    // 가로/세로 맞춤 토글
+    fitToggle.addEventListener("click", () => {
+        fitMode = fitMode === "width" ? "height" : "width";
+        fitToggle.textContent = fitMode === "width" ? "가로" : "세로";
+        updateOverlaySize();
+    });
 
-    // 녹화 중 피드백
-    captureBtn.style.backgroundColor = "red";
-    captureBtn.textContent = "●";
-}
+    // 이미지 회전
+    rotateToggle.addEventListener("click", () => {
+        isRotated = !isRotated;
+        updateOverlayImage();
+    });
 
-function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
+    // 비율 변경
+    aspectToggle.addEventListener("click", () => {
+        isWideMode = !isWideMode;
+        cameraContainer.classList.toggle("wide-mode", isWideMode);
+        aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
+    });
 
-        // 녹화 종료 시 버튼 원래대로
+    // 캡처 버튼 이벤트 (짧게 누르면 사진, 길게 누르면 영상)
+    captureBtn.addEventListener("mousedown", () => {
+        recordingTimeout = setTimeout(startRecording, 500);  // 0.5초 이상 누르면 녹화 시작
+    });
+
+    captureBtn.addEventListener("mouseup", () => {
+        clearTimeout(recordingTimeout);
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            stopRecording();
+        } else {
+            captureImage();  // 0.5초 미만 누르면 사진 촬영
+        }
+    });
+
+    captureBtn.addEventListener("touchstart", () => {
+        recordingTimeout = setTimeout(startRecording, 500);
+    });
+
+    captureBtn.addEventListener("touchend", () => {
+        clearTimeout(recordingTimeout);
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            stopRecording();
+        } else {
+            captureImage();
+        }
+    });
+
+    // 사진 캡처 기능
+    async function captureImage() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+
+        const imageData = canvas.toDataURL("image/png");
+        const blob = await (await fetch(imageData)).blob();
+        const file = new File([blob], "captured_image.png", { type: "image/png" });
+
+        if (isIOS() && navigator.share) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: "사진 저장",
+                    text: "캡처한 사진을 저장하세요."
+                });
+            } catch (error) {
+                console.error("공유 실패:", error);
+            }
+        } else {
+            const link = document.createElement("a");
+            link.href = imageData;
+            link.download = "captured_image.png";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    // 동영상 녹화 시작
+    function startRecording() {
+        if (!video.srcObject) {
+            console.error("카메라 스트림이 없습니다.");
+            return;
+        }
+
+        const mp4Options = { mimeType: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"' };
+        const webmOptions = { mimeType: 'video/webm; codecs=vp9' };
+
+        const options = MediaRecorder.isTypeSupported(mp4Options.mimeType) ? mp4Options : webmOptions;
+
+        mediaRecorder = new MediaRecorder(video.srcObject, options);
+        recordedChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = () => saveRecording(options.mimeType);
+        mediaRecorder.start();
+
+        // 녹화 중 피드백
+        captureBtn.style.backgroundColor = "red";
+        captureBtn.textContent = "●";
+    }
+
+    // 녹화 종료 및 저장
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+        }
+
+        // 피드백 원상복구
         captureBtn.style.backgroundColor = "white";
         captureBtn.textContent = "📸";
     }
-}
 
-function saveRecording(mimeType) {
-    const blob = new Blob(recordedChunks, { type: mimeType });
-    const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-    const fileName = `recorded_video.${extension}`;
-    const videoURL = URL.createObjectURL(blob);
+    // 녹화된 영상 저장
+    function saveRecording(mimeType) {
+        const blob = new Blob(recordedChunks, { type: mimeType });
+        const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        const fileName = `recorded_video.${extension}`;
+        const videoURL = URL.createObjectURL(blob);
 
-    // iOS에서는 공유 기능 사용
-    if (isIOS() && navigator.share) {
-        const file = new File([blob], fileName, { type: mimeType });
-        navigator.share({
-            files: [file],
-            title: "녹화된 동영상",
-            text: "녹화한 영상을 저장하세요."
-        }).catch(err => console.error("공유 실패:", err));
-    } else {
-        // 일반 브라우저 다운로드
-        const link = document.createElement("a");
-        link.href = videoURL;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        if (isIOS() && navigator.share) {
+            const file = new File([blob], fileName, { type: mimeType });
+            navigator.share({
+                files: [file],
+                title: "녹화된 동영상",
+                text: "녹화한 영상을 저장하세요."
+            }).catch(err => console.error("공유 실패:", err));
+        } else {
+            const link = document.createElement("a");
+            link.href = videoURL;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
-}
+});
 
-// iOS 감지 함수
-function isIOS() {
-    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-
-            // iOS 체크 함수
-            const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-            // 카메라 시작
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => video.srcObject = stream)
-                .catch(err => console.error("카메라 접근 실패:", err));
-
-            // 투명도 조절
-            opacitySlider.addEventListener("input", () => {
-                overlay.style.opacity = opacitySlider.value;
-            });
-
-            // 이미지 업로드
-            uploadBtn.addEventListener("click", () => upload.click());
-            upload.addEventListener("change", handleImageUpload);
-
-            function handleImageUpload(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    originalImage = new Image();
-                    originalImage.onload = updateOverlayImage;
-                    originalImage.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-
-            // 오버레이 이미지 갱신
-            function updateOverlayImage() {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-
-                if (isRotated) {
-                    canvas.width = originalImage.height;
-                    canvas.height = originalImage.width;
-                    ctx.translate(canvas.width / 2, canvas.height / 2);
-                    ctx.rotate(Math.PI / 2);
-                    ctx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
-                } else {
-                    canvas.width = originalImage.width;
-                    canvas.height = originalImage.height;
-                    ctx.drawImage(originalImage, 0, 0);
-                }
-                overlay.src = canvas.toDataURL();
-                updateOverlaySize();
-            }
-
-            // 오버레이 크기 조절
-            function updateOverlaySize() {
-                overlay.style.width = fitMode === "width" ? "100%" : "auto";
-                overlay.style.height = fitMode === "width" ? "auto" : "100%";
-            }
-
-            // 가로/세로 맞춤 토글
-            fitToggle.addEventListener("click", () => {
-                fitMode = fitMode === "width" ? "height" : "width";
-                fitToggle.textContent = fitMode === "width" ? "가로" : "세로";
-                updateOverlaySize();
-            });
-
-            // 이미지 회전
-            rotateToggle.addEventListener("click", () => {
-                isRotated = !isRotated;
-                updateOverlayImage();
-            });
-
-            // 비율 변경
-            aspectToggle.addEventListener("click", () => {
-                isWideMode = !isWideMode;
-                cameraContainer.classList.toggle("wide-mode", isWideMode);
-                aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
-            });
-
-            // 캡처 기능
-            captureBtn.addEventListener("click", captureImage);
-
-            async function captureImage() {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0);
-
-                const imageData = canvas.toDataURL("image/png");
-                const response = await fetch(imageData);
-                const blob = await response.blob();
-                const file = new File([blob], "captured_image.png", { type: "image/png" });
-
-                if (isIOS() && navigator.share) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: "사진 저장",
-                            text: "캡처한 사진을 저장하세요."
-                        });
-                    } catch (error) {
-                        console.error("공유 실패:", error);
-                    }
-                } else {
-                    const link = document.createElement("a");
-                    link.href = imageData;
-                    link.download = "captured_image.png";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
-            }
-        });
     </script>
 </body>
 </html>
