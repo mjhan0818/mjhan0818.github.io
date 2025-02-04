@@ -131,6 +131,92 @@
             let fitMode = "width";
             let isWideMode = false;
             let originalImage = null;
+            let mediaRecorder;
+let recordedChunks = [];
+
+// 캡처 버튼에 이벤트 추가
+captureBtn.addEventListener("mousedown", startRecording);
+captureBtn.addEventListener("mouseup", stopRecording);
+captureBtn.addEventListener("touchstart", startRecording);  // 모바일 대응
+captureBtn.addEventListener("touchend", stopRecording);
+
+function startRecording() {
+    if (!video.srcObject) {
+        console.error("카메라 스트림이 없습니다.");
+        return;
+    }
+
+    // MP4 형식 시도, 지원 안되면 WebM으로 대체
+    const mp4Options = { mimeType: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"' };
+    const webmOptions = { mimeType: 'video/webm; codecs=vp9' };
+
+    const options = MediaRecorder.isTypeSupported(mp4Options.mimeType) ? mp4Options : webmOptions;
+
+    if (options.mimeType === mp4Options.mimeType) {
+        console.log("MP4 형식으로 녹화 중...");
+    } else {
+        console.warn("MP4 형식이 지원되지 않아 WebM으로 녹화합니다.");
+    }
+
+    // MediaRecorder 초기화
+    mediaRecorder = new MediaRecorder(video.srcObject, options);
+
+    mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+        }
+    };
+
+    mediaRecorder.onstop = () => saveRecording(options.mimeType);
+
+    recordedChunks = [];
+    mediaRecorder.start();
+
+    // 녹화 중 피드백
+    captureBtn.style.backgroundColor = "red";
+    captureBtn.textContent = "●";
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+
+        // 녹화 종료 시 버튼 원래대로
+        captureBtn.style.backgroundColor = "white";
+        captureBtn.textContent = "📸";
+    }
+}
+
+function saveRecording(mimeType) {
+    const blob = new Blob(recordedChunks, { type: mimeType });
+    const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const fileName = `recorded_video.${extension}`;
+    const videoURL = URL.createObjectURL(blob);
+
+    // iOS에서는 공유 기능 사용
+    if (isIOS() && navigator.share) {
+        const file = new File([blob], fileName, { type: mimeType });
+        navigator.share({
+            files: [file],
+            title: "녹화된 동영상",
+            text: "녹화한 영상을 저장하세요."
+        }).catch(err => console.error("공유 실패:", err));
+    } else {
+        // 일반 브라우저 다운로드
+        const link = document.createElement("a");
+        link.href = videoURL;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+
+// iOS 감지 함수
+function isIOS() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 
             // iOS 체크 함수
             const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
