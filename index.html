@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>성지순례 카메라</title>
     <style>
+        :root {
+            --bg-color: #222;
+            --text-color: white;
+            --btn-bg: white;
+            --btn-border: rgba(255, 255, 255, 0.8);
+            --btn-active-bg: rgba(255, 255, 255, 0.7);
+        }
         html, body {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background: #222;
-            color: white;
+            background: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -28,10 +35,9 @@
             height: 120vw;
             max-height: 533px;
             overflow: hidden;
-            border: 2px solid white;
+            border: 2px solid var(--text-color);
             border-radius: 10px;
             transition: all 0.3s ease;
-            z-index: 10;
             background: black;
             display: flex;
             flex-direction: column;
@@ -39,21 +45,16 @@
             align-items: center;
         }
         .wide-mode {
-            height: 160vw !important;
+            height: 160vw;
             max-height: 711px;
         }
-        video {
+        video, img#overlay {
             position: absolute;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: 5;
         }
         img#overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             opacity: 0.5;
             pointer-events: none;
             transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
@@ -73,28 +74,25 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            align-items: center;
             gap: 10px;
             z-index: 20;
         }
         .btn {
             width: 45px;
             height: 45px;
-            background: white;
+            background: var(--btn-bg);
             border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.8);
+            border: 3px solid var(--btn-border);
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
-            text-align: center;
             color: black;
-            position: relative;
         }
         .btn:active {
-            background: rgba(255, 255, 255, 0.7);
+            background: var(--btn-active-bg);
         }
     </style>
 </head>
@@ -107,112 +105,64 @@
         <div class="controls">
             <div class="btn" id="uploadBtn">📷</div>
             <div class="btn" id="fitToggle">가로</div>  
-            <div id="capture" class="btn">📸</div>
-            <div id="aspectToggle" class="btn">16:9</div>
+            <div class="btn" id="capture">📸</div>
+            <div class="btn" id="aspectToggle">16:9</div>
             <div class="btn" id="rotateToggle">↻</div>  
         </div>
     </div>
 
     <canvas id="canvas" style="display: none;"></canvas>
-
-    <input type="file" id="upload" accept="image/*" class="hidden-input">
+    <input type="file" id="upload" accept="image/*" style="display:none;">
 
     <script>
-        let updatePending = false;
-
-        opacitySlider.addEventListener("input", () => {
-            if (!updatePending) {
-                updatePending = true;
-                requestAnimationFrame(() => {
-                    overlay.style.opacity = opacitySlider.value;
-                    updatePending = false;
-                });
-            }
-        }, { passive: true });
-
         document.addEventListener("DOMContentLoaded", () => {
+            const cameraContainer = document.getElementById("cameraContainer");
             const video = document.getElementById("camera");
             const overlay = document.getElementById("overlay");
             const upload = document.getElementById("upload");
             const uploadBtn = document.getElementById("uploadBtn");
             const fitToggle = document.getElementById("fitToggle");
             const rotateToggle = document.getElementById("rotateToggle");
-            const capture = document.getElementById("capture");
+            const captureBtn = document.getElementById("capture");
             const aspectToggle = document.getElementById("aspectToggle");
-            const cameraContainer = document.getElementById("cameraContainer");
+            const opacitySlider = document.getElementById("opacitySlider");
 
-            let isRotated = false; 
-            let fitMode = "width"; 
-            let isWideMode = false; 
+            let isRotated = false;
+            let fitMode = "width";
+            let isWideMode = false;
             let originalImage = null;
 
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("카메라 접근 실패:", err);
-                });
+            // iOS 체크 함수
+            const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+            // 카메라 시작
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => video.srcObject = stream)
+                .catch(err => console.error("카메라 접근 실패:", err));
+
+            // 투명도 조절
+            opacitySlider.addEventListener("input", () => {
+                overlay.style.opacity = opacitySlider.value;
+            });
+
+            // 이미지 업로드
             uploadBtn.addEventListener("click", () => upload.click());
-            upload.addEventListener("change", (event) => {
+            upload.addEventListener("change", handleImageUpload);
+
+            function handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     originalImage = new Image();
-                    originalImage.onload = () => updateOverlayImage();
+                    originalImage.onload = updateOverlayImage;
                     originalImage.src = e.target.result;
                 };
-                reader.readAsDataURL(event.target.files[0]);
-            });
-
-            function isIOS() {
-                return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                reader.readAsDataURL(file);
             }
 
-capture.addEventListener("click", async () => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    // 캔버스 크기를 비디오 화면 크기에 맞춤
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // 이미지 데이터 URL 생성
-    const imageData = canvas.toDataURL("image/png");
-
-    // Blob으로 변환
-    const response = await fetch(imageData);
-    const blob = await response.blob();
-    const file = new File([blob], "captured_image.png", { type: "image/png" });
-
-    // iOS 기기인지 확인
-    function isIOS() {
-        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
-
-    if (isIOS() && navigator.share) {
-        try {
-            await navigator.share({
-                files: [file],
-                title: "사진 저장",
-                text: "캡처한 사진을 저장하세요.",
-            });
-        } catch (error) {
-            console.error("공유 실패:", error);
-        }
-    } else {
-        // 일반 브라우저에서는 기존 다운로드 방식 유지
-        const link = document.createElement("a");
-        link.href = imageData;
-        link.download = "captured_image.png";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-});
-
-
+            // 오버레이 이미지 갱신
             function updateOverlayImage() {
                 const canvas = document.createElement("canvas");
                 const ctx = canvas.getContext("2d");
@@ -228,34 +178,70 @@ capture.addEventListener("click", async () => {
                     canvas.height = originalImage.height;
                     ctx.drawImage(originalImage, 0, 0);
                 }
-
                 overlay.src = canvas.toDataURL();
                 updateOverlaySize();
             }
 
+            // 오버레이 크기 조절
             function updateOverlaySize() {
                 overlay.style.width = fitMode === "width" ? "100%" : "auto";
                 overlay.style.height = fitMode === "width" ? "auto" : "100%";
             }
 
+            // 가로/세로 맞춤 토글
             fitToggle.addEventListener("click", () => {
                 fitMode = fitMode === "width" ? "height" : "width";
                 fitToggle.textContent = fitMode === "width" ? "가로" : "세로";
                 updateOverlaySize();
             });
 
+            // 이미지 회전
             rotateToggle.addEventListener("click", () => {
                 isRotated = !isRotated;
                 updateOverlayImage();
             });
 
+            // 비율 변경
             aspectToggle.addEventListener("click", () => {
                 isWideMode = !isWideMode;
                 cameraContainer.classList.toggle("wide-mode", isWideMode);
                 aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
             });
 
-            updateOverlaySize();
+            // 캡처 기능
+            captureBtn.addEventListener("click", captureImage);
+
+            async function captureImage() {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+
+                const imageData = canvas.toDataURL("image/png");
+                const response = await fetch(imageData);
+                const blob = await response.blob();
+                const file = new File([blob], "captured_image.png", { type: "image/png" });
+
+                if (isIOS() && navigator.share) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: "사진 저장",
+                            text: "캡처한 사진을 저장하세요."
+                        });
+                    } catch (error) {
+                        console.error("공유 실패:", error);
+                    }
+                } else {
+                    const link = document.createElement("a");
+                    link.href = imageData;
+                    link.download = "captured_image.png";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            }
         });
     </script>
 </body>
