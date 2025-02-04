@@ -115,7 +115,7 @@
     <input type="file" id="upload" accept="image/*" style="display:none;">
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", () => {
     const cameraContainer = document.getElementById("cameraContainer");
     const video = document.getElementById("camera");
     const overlay = document.getElementById("overlay");
@@ -139,16 +139,23 @@
     // iOS 감지 함수
     const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    // 카메라 시작
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(stream => {
-            video.srcObject = stream;
-            video.onloadedmetadata = () => video.play();
-        })
-        .catch(err => {
-            console.error("카메라 접근 실패:", err);
-            alert("카메라에 접근할 수 없습니다. 권한을 확인해주세요.");
-        });
+    // 카메라 시작 (4K 60fps 설정)
+    navigator.mediaDevices.getUserMedia({
+        video: {
+            width: { ideal: 3840 },  // 4K 해상도 (가로)
+            height: { ideal: 2160 }, // 4K 해상도 (세로)
+            frameRate: { ideal: 60 }, // 60fps
+            facingMode: "environment" // 후면 카메라 사용
+        }
+    })
+    .then(stream => {
+        video.srcObject = stream;
+        video.onloadedmetadata = () => video.play();
+    })
+    .catch(err => {
+        console.error("카메라 접근 실패:", err);
+        alert("카메라에 접근할 수 없습니다. 권한을 확인해주세요.");
+    });
 
     // 투명도 조절
     opacitySlider.addEventListener("input", () => {
@@ -218,7 +225,7 @@
         aspectToggle.textContent = isWideMode ? "4:3" : "16:9";
     });
 
-    // 캡처 버튼 이벤트
+    // 캡처 버튼 이벤트 (한 번 클릭: 사진, 더블클릭: 동영상 촬영)
     captureBtn.addEventListener("click", () => {
         if (clickTimer == null) {
             clickTimer = setTimeout(() => {
@@ -241,12 +248,15 @@
         }
     });
 
-    // 사진 캡처 기능
+    // 사진 캡처 기능 (최고 화질)
     async function captureImage() {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
+
+        // 비디오의 실제 해상도에 맞춰 캔버스 크기 설정 (최고 화질)
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+
         ctx.drawImage(video, 0, 0);
 
         const imageData = canvas.toDataURL("image/png");
@@ -273,7 +283,7 @@
         }
     }
 
-    // 동영상 녹화 시작
+    // 동영상 녹화 시작 (4K 60fps)
     function startRecording() {
         if (!video.srcObject) {
             console.error("카메라 스트림이 없습니다.");
