@@ -115,7 +115,7 @@
     <input type="file" id="upload" accept="image/*" style="display:none;">
 
     <script>
-document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", () => {
     const cameraContainer = document.getElementById("cameraContainer");
     const video = document.getElementById("camera");
     const overlay = document.getElementById("overlay");
@@ -134,6 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let mediaRecorder;
     let recordedChunks = [];
     let isRecording = false;
+    let clickTimer = null; // 클릭 타이머 변수
 
     // iOS 감지 함수
     const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -219,12 +220,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 캡처 버튼 이벤트
     captureBtn.addEventListener("click", () => {
-        if (!isRecording) {
-            captureImage();  // 녹화 중이 아닐 때는 사진 촬영
+        if (clickTimer == null) {
+            clickTimer = setTimeout(() => {
+                if (!isRecording) {
+                    captureImage();  // 더블클릭이 아니면 사진 촬영
+                }
+                clickTimer = null;  // 타이머 초기화
+            }, 300);  // 더블클릭 감지 시간 (300ms)
         }
     });
 
     captureBtn.addEventListener("dblclick", () => {
+        clearTimeout(clickTimer);  // 더블클릭 시 사진 촬영 취소
+        clickTimer = null;
+
         if (!isRecording) {
             startRecording();  // 녹화 시작
         } else {
